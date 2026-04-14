@@ -7,7 +7,6 @@ spec/system.cat:
     - src/middleware.ts
     - src/lib/supabase/client.ts
     - src/lib/supabase/server.ts
-  choices: {}
 
 spec/auth.cat:
   content_hash: d4e5f6a7
@@ -16,10 +15,6 @@ spec/auth.cat:
     - src/app/(auth)/signup/page.tsx
     - src/supabase/migrations/001_create_teams.sql
     - src/supabase/migrations/002_create_profiles.sql
-  choices:
-    ui_library: shadcn/ui
-    form_validation: react-hook-form
-    team_onboarding: create_on_signup  # from clarify/q2
 
 spec/features/tasks.cat:
   content_hash: b8c9d0e1
@@ -33,8 +28,10 @@ spec/features/tasks.cat:
     - src/lib/notifications.ts
     - src/supabase/migrations/003_create_projects.sql
     - src/supabase/migrations/004_create_tasks.sql
-  choices:
-    dnd_library: "@hello-pangea/dnd"     # pinned by user
-    notification_strategy: in_app_db     # from clarify/q1 (pick → LLM chose)
-    rls_scope: team                      # from clarify/q3
-    task_form_validation: zod
+  dependencies:
+    - spec/auth.cat
+  migrations:
+    - file: 003_create_projects.sql
+      depends_on: [002_create_profiles.sql]
+    - file: 004_create_tasks.sql
+      depends_on: [003_create_projects.sql]

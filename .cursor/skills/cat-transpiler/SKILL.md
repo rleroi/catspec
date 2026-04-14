@@ -137,9 +137,9 @@ files_modified:
   - path: package.json
     action: updated
     reason: "Added @supabase/supabase-js, @supabase/ssr"
-decisions_made:
-  - key: ui_library
-    value: shadcn/ui
+spec_enrichments:
+  - file: spec/auth.cat
+    added: "Pin: ui_library = shadcn/ui"
     reason: "Stack includes Tailwind; shadcn/ui is the idiomatic choice"
 build:
   status: pass | fail
@@ -317,7 +317,7 @@ Literal:  > Pin:  > Flow/View steps  > Description text  > LLM discretion
 
 After generating all files:
 
-1. **Write `.cat/purr`** with all choices, `last_transpiled_commit` set to HEAD
+1. **Write `.cat/purr`** with content hashes, outputs, dependencies, and `last_transpiled_commit` set to HEAD
 2. **Write `.env.example`** from provider `requires.env` fields
 3. **Run the build** (`npm run build` or equivalent) to verify the code compiles
 4. **If build fails**, read the errors and self-correct (up to 2 retries as configured)
@@ -365,9 +365,7 @@ spec/auth.cat:
   outputs:
     - src/app/(auth)/login/page.tsx
     - src/app/(auth)/signup/page.tsx
-  choices:
-    ui_library: shadcn/ui
-    form_validation: zod
+    - src/lib/auth.ts
 ```
 
 ### Fallback when purr file is missing or corrupted

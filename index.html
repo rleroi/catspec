@@ -402,7 +402,7 @@
 │       └── transpile.yml       <span class="comment"># triggers on spec/ changes</span>
 ├── .cat/
 │   ├── config.yaml             <span class="comment"># stack, model, preferences</span>
-│   ├── purr          <span class="comment"># LLM choices (stable across runs)</span>
+│   ├── purr          <span class="comment"># transpilation metadata (hashes, outputs, deps)</span>
 │   └── providers/              <span class="comment"># provider profiles</span>
 │       └── supabase.yaml
 ├── spec/                       <span class="comment"># source of truth (human-edited)</span>
@@ -441,10 +441,10 @@
 
   <h3>The Purr File</h3>
   <p>
-    Since the LLM has discretion, its choices are recorded in <code>.cat/purr</code>.
-    This ensures stability across runs &mdash; re-transpiling won't change decisions unless
-    the spec changes. Humans can review choices and promote them to <code>pin:</code> blocks
-    to make them permanent. The purr file also records the <strong>last transpiled git commit</strong>,
+    When the LLM makes implementation choices, it writes them back into the <code>.cat</code>
+    spec files as <code>Pin:</code> blocks &mdash; keeping the spec as the single source of truth.
+    The <code>.cat/purr</code> file tracks <strong>operational metadata</strong> only: content hashes,
+    generated output paths, cross-feature dependencies, and the <strong>last transpiled git commit</strong>,
     so incremental runs can <code>git diff</code> against it to find only the spec files that changed.
   </p>
 <pre><code><span class="comment"># .cat/purr</span>
@@ -460,24 +460,24 @@
     - src/app/(auth)/login/page.tsx
     - src/app/(auth)/signup/page.tsx
     - src/lib/auth.ts
-  choices:
-    ui_library: shadcn/ui
-    form_validation: zod + react-hook-form
 
 <span class="keyword">spec/features/invoices.cat</span>:
   content_hash: e5f6g7h8
   outputs:
     - src/app/invoices/page.tsx
     - src/supabase/migrations/002_invoices.sql
-  choices:
-    pdf_generation: <span class="string">"@react-pdf/renderer"</span> <span class="comment"># pinned by user</span></code></pre>
+  dependencies:
+    - spec/models.cat <span class="comment"># uses shared Invoice model</span>
+  migrations:
+    - 002_invoices.sql
+    depends_on: 001_auth.sql</code></pre>
 
   <h3>POC Components</h3>
   <table>
     <tr><th>Component</th><th>What</th><th>Priority</th></tr>
     <tr><td>GitHub Template</td><td>Repo scaffold with folder structure, workflow, config</td><td>P0</td></tr>
     <tr><td>CaT CLI</td><td><code>cat transpile</code> &mdash; reads spec, calls LLM, writes to <code>src/</code></td><td>P0</td></tr>
-    <tr><td>Decision Lock</td><td>Track LLM choices, detect spec changes, incremental diffs</td><td>P0</td></tr>
+    <tr><td>Purr File</td><td>Track content hashes, outputs, dependencies, incremental diffs</td><td>P0</td></tr>
     <tr><td>Supabase Provider</td><td>Provider profile + system prompt tuning for Supabase idioms</td><td>P1</td></tr>
     <tr><td>GitHub Action</td><td>CI wrapper around the CLI, PR creation</td><td>P1</td></tr>
     <tr><td>Formal Parser</td><td>AST parser for <code>.cat</code> files (optional for v0.1 &mdash; LLM reads raw text)</td><td>P2</td></tr>
