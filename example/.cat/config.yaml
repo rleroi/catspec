@@ -1,0 +1,21 @@
+version: 0.1
+
+system:
+  name: TaskFlow
+
+stack:
+  framework: nextjs
+  language: typescript
+  database: supabase
+  auth: supabase
+  styling: tailwind
+  deploy: vercel
+
+transpiler:
+  model: claude-sonnet-4
+  strategy: incremental
+  output: src/
+  retries: 2
+
+providers:
+  path: .cat/providers/

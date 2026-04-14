@@ -1,0 +1,13 @@
+name: Supabase Auth
+category: authentication
+capabilities:
+  - email-password
+  - oauth: [google, github, apple]
+  - magic-link
+  - phone-otp
+defaults:
+  session: jwt
+  storage: cookie
+requires:
+  env: [SUPABASE_URL, SUPABASE_ANON_KEY]
+  packages: ["@supabase/supabase-js", "@supabase/ssr"]

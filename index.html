@@ -1,0 +1,1213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CaT — Code as Text</title>
+<style>
+  :root {
+    --bg: #0e0e10;
+    --surface: #18181b;
+    --surface-2: #1e1e22;
+    --border: #2a2a2e;
+    --text: #e4e4e7;
+    --text-muted: #a1a1aa;
+    --accent: #f59e0b;
+    --accent-dim: #92400e;
+    --green: #34d399;
+    --blue: #60a5fa;
+    --purple: #a78bfa;
+    --red: #f87171;
+    --pink: #f472b6;
+    --mono: 'SF Mono', 'Cascadia Code', 'Fira Code', 'JetBrains Mono', monospace;
+    --sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: var(--sans);
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  ::selection {
+    background: var(--accent);
+    color: var(--bg);
+  }
+
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  /* ---- NAV ---- */
+  nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    background: rgba(14,14,16,0.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+  }
+  nav .inner {
+    max-width: 900px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 56px;
+  }
+  nav .logo {
+    font-weight: 700;
+    font-size: 1.1rem;
+    letter-spacing: -0.02em;
+  }
+  nav .logo span { color: var(--accent); }
+  nav .links { display: flex; gap: 1.5rem; }
+  nav .links a {
+    color: var(--text-muted);
+    font-size: 0.875rem;
+    transition: color 0.15s;
+  }
+  nav .links a:hover { color: var(--text); text-decoration: none; }
+
+  /* ---- LAYOUT ---- */
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 2rem;
+  }
+
+  section {
+    padding: 5rem 0;
+    border-bottom: 1px solid var(--border);
+  }
+  section:last-child { border-bottom: none; }
+
+  h1 {
+    font-size: 3rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.15;
+  }
+  h2 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 1.5rem;
+    color: var(--text);
+  }
+  h3 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    color: var(--text);
+  }
+  h4 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-size: 0.8rem;
+  }
+
+  p { margin-bottom: 1rem; color: var(--text-muted); }
+  p.lead { font-size: 1.15rem; color: var(--text); }
+  strong { color: var(--text); }
+
+  ul, ol { margin-bottom: 1rem; padding-left: 1.5rem; color: var(--text-muted); }
+  li { margin-bottom: 0.35rem; }
+  li strong { color: var(--text); }
+
+  /* ---- HERO ---- */
+  .hero {
+    padding: 10rem 0 5rem;
+    text-align: center;
+  }
+  .hero .tagline {
+    display: inline-block;
+    background: var(--accent-dim);
+    color: var(--accent);
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 0.3rem 0.8rem;
+    border-radius: 100px;
+    margin-bottom: 1.5rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .hero h1 { margin-bottom: 1.5rem; }
+  .hero h1 em {
+    font-style: normal;
+    color: var(--accent);
+  }
+  .hero p {
+    font-size: 1.2rem;
+    max-width: 600px;
+    margin: 0 auto 2rem;
+    color: var(--text-muted);
+  }
+  .hero .analogy {
+    display: inline-flex;
+    align-items: center;
+    gap: 1rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.75rem 1.5rem;
+    font-family: var(--mono);
+    font-size: 0.9rem;
+    color: var(--text-muted);
+  }
+  .hero .analogy span { color: var(--accent); font-weight: 600; }
+
+  /* ---- CODE BLOCKS ---- */
+  pre {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.25rem 1.5rem;
+    overflow-x: auto;
+    margin-bottom: 1.5rem;
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    line-height: 1.65;
+    color: var(--text);
+  }
+  pre .comment { color: #6b7280; }
+  pre .keyword { color: var(--accent); }
+  pre .type { color: var(--purple); }
+  pre .string { color: var(--green); }
+  pre .symbol { color: var(--blue); }
+  pre .pin { color: var(--red); }
+  pre .flow { color: var(--pink); }
+  pre .label { color: var(--text-muted); }
+
+  code {
+    font-family: var(--mono);
+    font-size: 0.875em;
+    background: var(--surface);
+    padding: 0.15em 0.4em;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+  }
+  pre code {
+    background: none;
+    border: none;
+    padding: 0;
+    font-size: inherit;
+  }
+
+  /* ---- CARDS ---- */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.25rem;
+  }
+  .card h3 { font-size: 1rem; margin-bottom: 0.5rem; }
+  .card p { font-size: 0.9rem; margin-bottom: 0; }
+
+  /* ---- TABLE ---- */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 1.5rem;
+    font-size: 0.9rem;
+  }
+  th, td {
+    text-align: left;
+    padding: 0.6rem 1rem;
+    border-bottom: 1px solid var(--border);
+  }
+  th { color: var(--text-muted); font-weight: 600; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.04em; }
+  td { color: var(--text-muted); }
+  td:first-child { color: var(--text); font-weight: 500; }
+  tr:last-child td { border-bottom: none; }
+
+  /* ---- SPEC SECTION STYLING ---- */
+  .spec-block {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 8px 8px 0;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+  .spec-block h4 { margin-bottom: 0.75rem; }
+  .spec-block p { font-size: 0.9rem; }
+  .spec-block p:last-child { margin-bottom: 0; }
+
+  .flow-diagram {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.5rem;
+    font-family: var(--mono);
+    font-size: 0.85rem;
+  }
+  .flow-diagram .step {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 0.4rem 0.8rem;
+    border-radius: 6px;
+    color: var(--text);
+  }
+  .flow-diagram .arrow { color: var(--accent); font-weight: bold; }
+
+  .toc {
+    columns: 2;
+    column-gap: 2rem;
+    margin-bottom: 2rem;
+  }
+  .toc a {
+    display: block;
+    color: var(--text-muted);
+    padding: 0.25rem 0;
+    font-size: 0.9rem;
+    break-inside: avoid;
+  }
+  .toc a:hover { color: var(--accent); }
+
+  .sep {
+    border: none;
+    border-top: 1px dashed var(--border);
+    margin: 2rem 0;
+  }
+
+  @media (max-width: 640px) {
+    h1 { font-size: 2rem; }
+    h2 { font-size: 1.4rem; }
+    .hero { padding: 7rem 0 3rem; }
+    section { padding: 3rem 0; }
+    nav .links { display: none; }
+    .toc { columns: 1; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="inner">
+    <div class="logo"><span>CaT</span> — Code as Text</div>
+    <div class="links">
+      <a href="#goal">Goal</a>
+      <a href="#poc">POC Plan</a>
+      <a href="#spec">Spec Language</a>
+      <a href="#example">Full Example</a>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+
+<!-- ==================== HERO ==================== -->
+<section class="hero">
+  <div class="tagline">Draft Specification v0.2</div>
+  <h1>Your spec is the source code.<br>The <em>LLM is the compiler</em>.</h1>
+  <p>
+    A structured language for defining human-readable codebases that are
+    transpiled and maintained by AI agents. Write what you want. Pin what you
+    care about. Let the machine handle the rest.
+  </p>
+  <div class="analogy">
+    <span>IaC</span> Infrastructure as Code
+    &nbsp;→&nbsp;
+    <span>CaT</span> Code as Text
+  </div>
+</section>
+
+<!-- ==================== GOAL ==================== -->
+<section id="goal">
+  <h2>The Goal</h2>
+
+  <p class="lead">
+    Traditional codebases are optimized for compilers, not comprehension.
+    LLMs work best with structured natural language. <strong>CaT bridges the gap</strong>
+    by making the human-readable specification the single source of truth,
+    and letting an AI agent transpile it into a working codebase.
+  </p>
+
+  <div class="card-grid">
+    <div class="card">
+      <h3>Spec is the Source</h3>
+      <p>
+        The <code>spec/</code> folder is the source of truth. Humans author
+        and version <code>.cat</code> files. Code in <code>src/</code> is a derived artifact.
+      </p>
+    </div>
+    <div class="card">
+      <h3>Progressive Specificity</h3>
+      <p>
+        Write at whatever level of detail you care about &mdash; from vague intent
+        ("I need auth") to pinned implementation details. The LLM fills in everything else.
+      </p>
+    </div>
+    <div class="card">
+      <h3>Git-Native Workflow</h3>
+      <p>
+        Transpilation runs on every commit via GitHub Actions. The LLM opens a PR
+        with the generated code. Humans review and merge &mdash; like <code>terraform plan</code>.
+      </p>
+    </div>
+    <div class="card">
+      <h3>Off-the-Shelf Components</h3>
+      <p>
+        Use <code>using:</code> to bind features to known providers (Supabase, Stripe, Resend).
+        The LLM uses idiomatic patterns. No reinventing the wheel.
+      </p>
+    </div>
+  </div>
+
+  <h3>The Spectrum of Control</h3>
+  <table>
+    <tr><th>Level</th><th>You write</th><th>LLM decides</th></tr>
+    <tr><td>Intent</td><td>"I need auth"</td><td>Everything: provider, flow, UI, code</td></tr>
+    <tr><td>Strategy</td><td><code>using: Supabase Auth</code></td><td>Wiring, components, error handling</td></tr>
+    <tr><td>Behavior</td><td>Flows and steps</td><td>Implementation code</td></tr>
+    <tr><td>Pin</td><td>Hard constraints</td><td>Everything else</td></tr>
+    <tr><td>Literal</td><td>Exact code blocks</td><td>Nothing &mdash; hands off</td></tr>
+  </table>
+</section>
+
+<!-- ==================== POC PLAN ==================== -->
+<section id="poc">
+  <h2>POC Plan</h2>
+
+  <p class="lead">
+    The proof of concept targets a <strong>Supabase + Next.js</strong> stack to keep scope
+    manageable while demonstrating the full loop: spec → transpile → PR → deploy.
+  </p>
+
+  <h3>Repository Structure</h3>
+<pre><code>my-cat-project/
+├── .github/
+│   └── workflows/
+│       └── transpile.yml       <span class="comment"># triggers on spec/ changes</span>
+├── .cat/
+│   ├── config.yaml             <span class="comment"># stack, model, preferences</span>
+│   ├── purr          <span class="comment"># LLM choices (stable across runs)</span>
+│   └── providers/              <span class="comment"># provider profiles</span>
+│       └── supabase.yaml
+├── spec/                       <span class="comment"># source of truth (human-edited)</span>
+│   ├── system.cat
+│   ├── auth.cat
+│   ├── models.cat
+│   └── features/
+│       └── *.cat
+├── src/                        <span class="comment"># transpiled output (LLM-generated)</span>
+│   ├── app/
+│   ├── lib/
+│   ├── components/
+│   └── supabase/
+│       ├── migrations/
+│       └── functions/
+└── README.md</code></pre>
+
+  <h3>Transpilation Pipeline</h3>
+  <div class="flow-diagram">
+    <span class="step">spec/ changed</span>
+    <span class="arrow">→</span>
+    <span class="step">git push</span>
+    <span class="arrow">→</span>
+    <span class="step">GitHub Action</span>
+    <span class="arrow">→</span>
+    <span class="step">CaT CLI reads diff</span>
+    <span class="arrow">→</span>
+    <span class="step">LLM transpiles</span>
+    <span class="arrow">→</span>
+    <span class="step">Opens PR</span>
+    <span class="arrow">→</span>
+    <span class="step">Human reviews</span>
+    <span class="arrow">→</span>
+    <span class="step">Merge & deploy</span>
+  </div>
+
+  <h3>The Purr File</h3>
+  <p>
+    Since the LLM has discretion, its choices are recorded in <code>.cat/purr</code>.
+    This ensures stability across runs &mdash; re-transpiling won't change decisions unless
+    the spec changes. Humans can review choices and promote them to <code>pin:</code> blocks
+    to make them permanent. The purr file also records the <strong>last transpiled git commit</strong>,
+    so incremental runs can <code>git diff</code> against it to find only the spec files that changed.
+  </p>
+<pre><code><span class="comment"># .cat/purr</span>
+
+<span class="comment"># Git state — used for incremental transpilation</span>
+<span class="keyword">last_transpiled_commit</span>: <span class="string">a3f7c2e</span>
+<span class="keyword">last_transpiled_at</span>: <span class="string">2026-04-14T10:30:00Z</span>
+
+<span class="comment"># Per-file state</span>
+<span class="keyword">spec/auth.cat</span>:
+  content_hash: a1b2c3d4
+  outputs:
+    - src/app/(auth)/login/page.tsx
+    - src/app/(auth)/signup/page.tsx
+    - src/lib/auth.ts
+  choices:
+    ui_library: shadcn/ui
+    form_validation: zod + react-hook-form
+
+<span class="keyword">spec/features/invoices.cat</span>:
+  content_hash: e5f6g7h8
+  outputs:
+    - src/app/invoices/page.tsx
+    - src/supabase/migrations/002_invoices.sql
+  choices:
+    pdf_generation: <span class="string">"@react-pdf/renderer"</span> <span class="comment"># pinned by user</span></code></pre>
+
+  <h3>POC Components</h3>
+  <table>
+    <tr><th>Component</th><th>What</th><th>Priority</th></tr>
+    <tr><td>GitHub Template</td><td>Repo scaffold with folder structure, workflow, config</td><td>P0</td></tr>
+    <tr><td>CaT CLI</td><td><code>cat transpile</code> &mdash; reads spec, calls LLM, writes to <code>src/</code></td><td>P0</td></tr>
+    <tr><td>Decision Lock</td><td>Track LLM choices, detect spec changes, incremental diffs</td><td>P0</td></tr>
+    <tr><td>Supabase Provider</td><td>Provider profile + system prompt tuning for Supabase idioms</td><td>P1</td></tr>
+    <tr><td>GitHub Action</td><td>CI wrapper around the CLI, PR creation</td><td>P1</td></tr>
+    <tr><td>Formal Parser</td><td>AST parser for <code>.cat</code> files (optional for v0.1 &mdash; LLM reads raw text)</td><td>P2</td></tr>
+  </table>
+</section>
+
+<!-- ==================== SPEC LANGUAGE ==================== -->
+<section id="spec">
+  <h2>The CaT Specification Language</h2>
+
+  <p class="lead">
+    <code>.cat</code> files are structured text documents that define a software system
+    in human-readable form. The format is intentionally designed to be readable
+    without tooling &mdash; it's valid text that any person can understand and any
+    LLM can parse.
+  </p>
+
+  <div class="toc">
+    <a href="#spec-files">1. File Structure</a>
+    <a href="#spec-system">2. System Declaration</a>
+    <a href="#spec-features">3. Features</a>
+    <a href="#spec-using">4. Provider Binding (using:)</a>
+    <a href="#spec-models">5. Data Models</a>
+    <a href="#spec-flows">6. Flows</a>
+    <a href="#spec-views">7. Views</a>
+    <a href="#spec-pin">8. Pinning (pin:)</a>
+    <a href="#spec-literal">9. Literal Code (literal:)</a>
+    <a href="#spec-constraints">10. Constraints</a>
+    <a href="#spec-refs">11. References</a>
+    <a href="#spec-config">12. Config (.cat/config.yaml)</a>
+    <a href="#spec-conventions">13. Conventions &amp; Style</a>
+  </div>
+
+  <!-- ---- 1. FILE STRUCTURE ---- -->
+  <h3 id="spec-files">1. File Structure</h3>
+
+  <p>
+    A CaT project contains a <code>spec/</code> directory with <code>.cat</code> files.
+    Each file defines one logical unit: a feature, a set of data models, or the
+    system itself. Files can be organized in subdirectories for larger projects.
+  </p>
+
+  <div class="spec-block">
+    <h4>File Naming</h4>
+    <p>
+      Files are named in <code>kebab-case</code> with the <code>.cat</code> extension.
+      The name should reflect the content: <code>auth.cat</code>, <code>user-profiles.cat</code>,
+      <code>billing.cat</code>.
+    </p>
+    <p>
+      One file is required: <code>spec/system.cat</code> &mdash; the root declaration
+      of the system.
+    </p>
+  </div>
+
+<pre><code>spec/
+├── system.cat              <span class="comment"># required &mdash; system declaration</span>
+├── auth.cat                <span class="comment"># one file per feature or domain</span>
+├── models.cat              <span class="comment"># shared data models</span>
+└── features/
+    ├── invoices.cat
+    └── dashboard.cat</code></pre>
+
+  <hr class="sep">
+
+  <!-- ---- 2. SYSTEM ---- -->
+  <h3 id="spec-system">2. System Declaration</h3>
+
+  <p>
+    Every CaT project starts with <code>system.cat</code>. It names the system,
+    provides a high-level description, and declares the stack.
+  </p>
+
+<pre><code><span class="keyword">System:</span> <span class="string">FreelanceOS</span>
+
+A simple invoicing app for freelancers. Manage clients,
+create invoices, accept payments, and track revenue.
+
+<span class="keyword">Stack:</span>
+  <span class="label">framework:</span>  <span class="type">Next.js</span> (App Router)
+  <span class="label">language:</span>   <span class="type">TypeScript</span>
+  <span class="label">database:</span>   <span class="type">Supabase</span>
+  <span class="label">auth:</span>       <span class="type">Supabase Auth</span>
+  <span class="label">styling:</span>    <span class="type">Tailwind</span> + <span class="type">shadcn/ui</span>
+  <span class="label">deploy:</span>     <span class="type">Vercel</span></code></pre>
+
+  <div class="spec-block">
+    <h4>Syntax Rules</h4>
+    <p>
+      <code>System:</code> is followed by the system name on the same line.
+      The description is free-form text on subsequent lines until the next
+      keyword. <code>Stack:</code> contains indented key-value pairs.
+    </p>
+  </div>
+
+  <hr class="sep">
+
+  <!-- ---- 3. FEATURES ---- -->
+  <h3 id="spec-features">3. Features</h3>
+
+  <p>
+    A <strong>Feature</strong> is the primary building block of a CaT spec. It describes
+    a capability of the system. A feature can contain a description,
+    provider binding, data models, flows, views, pins, and constraints.
+  </p>
+
+<pre><code><span class="keyword">Feature:</span> <span class="string">Authentication</span>
+  <span class="keyword">using:</span> <span class="type">Supabase Auth</span>
+
+  Users can sign up, log in, and reset their password.
+  New users start on the free plan.
+
+  <span class="flow">Flow:</span> Sign Up
+    ...
+
+  <span class="flow">Flow:</span> Password Reset
+    ...
+
+  <span class="pin">Pin:</span>
+    ...</code></pre>
+
+  <div class="spec-block">
+    <h4>Syntax Rules</h4>
+    <p>
+      <code>Feature:</code> is followed by the feature name. Everything until
+      the next block keyword (<code>Flow:</code>, <code>View:</code>, <code>Model:</code>,
+      <code>Pin:</code>, <code>Constraint:</code>, or a new <code>Feature:</code>) is treated
+      as a free-form description. The description is natural language &mdash; the LLM
+      uses it as context for implementation decisions.
+    </p>
+  </div>
+
+  <p>
+    At the <strong>simplest</strong> level, a feature can be a single line:
+  </p>
+
+<pre><code><span class="keyword">Feature:</span> <span class="string">Authentication</span>
+  Users can sign up and log in.</code></pre>
+
+  <p>
+    The LLM has full discretion: it picks the provider, designs the UI,
+    chooses the flows. The user adds detail only when they care.
+  </p>
+
+  <hr class="sep">
+
+  <!-- ---- 4. USING ---- -->
+  <h3 id="spec-using">4. Provider Binding (<code>using:</code>)</h3>
+
+  <p>
+    The <code>using:</code> keyword binds a feature to one or more providers or libraries.
+    It tells the LLM: <em>"use these tools and their idiomatic patterns."</em>
+    Multiple providers are comma-separated.
+  </p>
+
+<pre><code><span class="keyword">Feature:</span> <span class="string">Authentication</span>
+  <span class="keyword">using:</span> <span class="type">Supabase Auth</span>
+
+<span class="keyword">Feature:</span> <span class="string">Payments</span>
+  <span class="keyword">using:</span> <span class="type">Stripe</span>
+
+<span class="keyword">Feature:</span> <span class="string">Invoices</span>
+  <span class="keyword">using:</span> <span class="type">Supabase</span>, <span class="type">Resend</span>       <span class="comment"># multiple providers</span>
+
+<span class="keyword">Feature:</span> <span class="string">File Uploads</span>
+  <span class="keyword">using:</span> <span class="type">Supabase Storage</span></code></pre>
+
+  <div class="spec-block">
+    <h4>What <code>using:</code> does</h4>
+    <p>
+      The provider name maps to a <strong>provider profile</strong> in
+      <code>.cat/providers/</code>. This profile contains the provider's
+      capabilities, required environment variables, packages, and idiomatic
+      patterns. The LLM receives this profile as context during transpilation.
+    </p>
+    <p>
+      If <code>using:</code> is omitted, the LLM selects a provider based on
+      the stack defined in <code>system.cat</code> and coherence with other features.
+      Its choice is recorded in <code>purr</code>.
+    </p>
+  </div>
+
+  <p><strong>Provider profiles</strong> look like this:</p>
+
+<pre><code><span class="comment"># .cat/providers/supabase-auth.yaml</span>
+<span class="keyword">name:</span> <span class="string">Supabase Auth</span>
+<span class="keyword">category:</span> authentication
+<span class="keyword">capabilities:</span>
+  - email-password
+  - oauth: [google, github, apple]
+  - magic-link
+  - phone-otp
+<span class="keyword">defaults:</span>
+  <span class="label">session:</span> jwt
+  <span class="label">storage:</span> cookie
+<span class="keyword">requires:</span>
+  <span class="label">env:</span> [SUPABASE_URL, SUPABASE_ANON_KEY]
+  <span class="label">packages:</span> [<span class="string">"@supabase/supabase-js"</span>, <span class="string">"@supabase/ssr"</span>]</code></pre>
+
+  <hr class="sep">
+
+  <!-- ---- 5. MODELS ---- -->
+  <h3 id="spec-models">5. Data Models</h3>
+
+  <p>
+    A <strong>Model</strong> defines a data entity. Models can appear inside a feature
+    or in a dedicated <code>models.cat</code> file for shared entities.
+    <strong>Models referenced by multiple features</strong> should be defined in
+    <code>models.cat</code> rather than inside any one feature &mdash; this makes
+    cross-feature dependencies explicit and ensures incremental transpilation
+    can track them correctly.
+  </p>
+
+<pre><code><span class="keyword">Model:</span> <span class="type">Invoice</span>
+  <span class="symbol">id</span>:          uuid, primary key
+  <span class="symbol">owner</span>:       reference to <span class="type">Profile</span>
+  <span class="symbol">client_name</span>: text
+  <span class="symbol">client_email</span>: email
+  <span class="symbol">status</span>:      <span class="string">draft</span> | <span class="string">sent</span> | <span class="string">paid</span> | <span class="string">overdue</span>
+  <span class="symbol">due_date</span>:    date
+  <span class="symbol">items</span>:       list of <span class="type">LineItem</span>
+  <span class="symbol">created_at</span>:  timestamp, auto
+
+<span class="keyword">Model:</span> <span class="type">LineItem</span>
+  <span class="symbol">id</span>:          uuid, primary key
+  <span class="symbol">invoice</span>:     reference to <span class="type">Invoice</span>
+  <span class="symbol">description</span>: text
+  <span class="symbol">quantity</span>:    integer, min 1
+  <span class="symbol">rate</span>:        decimal</code></pre>
+
+  <div class="spec-block">
+    <h4>Syntax Rules</h4>
+    <p>
+      <code>Model:</code> is followed by the model name in PascalCase.
+      Fields are indented with the format: <code>name: type, ...modifiers</code>.
+    </p>
+    <h4>Supported Types</h4>
+    <p>
+      <code>text</code>, <code>integer</code>, <code>decimal</code>, <code>boolean</code>,
+      <code>date</code>, <code>timestamp</code>, <code>uuid</code>, <code>email</code>,
+      <code>url</code>, <code>json</code>, <code>currency</code>.
+      Enums use the pipe syntax: <code>value_a | value_b | value_c</code>.
+    </p>
+    <h4>Modifiers</h4>
+    <p>
+      <code>primary key</code>, <code>nullable</code>, <code>unique</code>,
+      <code>auto</code> (auto-generated), <code>min N</code>, <code>max N</code>,
+      <code>default VALUE</code>.
+      References use <code>reference to ModelName</code>.
+      Lists use <code>list of ModelName</code>.
+    </p>
+    <h4>Invariants</h4>
+    <p>
+      Business rules about the model can be expressed as
+      <code>Invariant:</code> lines after the fields:
+    </p>
+  </div>
+
+<pre><code><span class="keyword">Model:</span> <span class="type">Invoice</span>
+  <span class="symbol">status</span>: <span class="string">draft</span> | <span class="string">sent</span> | <span class="string">paid</span> | <span class="string">overdue</span>
+  <span class="symbol">items</span>:  list of <span class="type">LineItem</span>
+
+  <span class="pin">Invariant:</span> items must not be empty when status is <span class="string">"sent"</span>
+  <span class="pin">Invariant:</span> due_date must be in the future when status changes to <span class="string">"sent"</span></code></pre>
+
+  <hr class="sep">
+
+  <!-- ---- 6. FLOWS ---- -->
+  <h3 id="spec-flows">6. Flows</h3>
+
+  <p>
+    A <strong>Flow</strong> describes a user-facing behavior as a sequence of steps.
+    Flows live inside features and define <em>what happens</em>, not <em>how</em>
+    it's implemented.
+  </p>
+
+<pre><code><span class="flow">Flow:</span> Place Order
+  1. Customer confirms checkout
+  2. System creates Order with status <span class="string">"placed"</span>
+  3. System reserves inventory via <span class="type">InventoryService</span>
+  4. System charges payment via <span class="type">PaymentGateway</span>
+
+  <span class="flow">On failure</span> (step 4):
+    Set Order status to <span class="string">"cancelled"</span>
+    Release inventory</code></pre>
+
+  <div class="spec-block">
+    <h4>Syntax Rules</h4>
+    <p>
+      <code>Flow:</code> is followed by the flow name. Steps are numbered
+      lines with natural language descriptions. The LLM translates steps
+      into code.
+    </p>
+    <h4>Error Handling</h4>
+    <p>
+      <code>On failure (step N):</code> defines what happens when a step fails.
+      <code>On failure:</code> without a step reference applies to the entire flow.
+      This keeps specs readable while giving the LLM clear recovery logic.
+    </p>
+    <h4>Conditions</h4>
+    <p>
+      Use <code>If ... then ...</code> or <code>When ... then ...</code> for
+      conditional branching within a flow. Conditions are natural language.
+    </p>
+  </div>
+
+<pre><code><span class="flow">Flow:</span> Send Invoice
+  1. User clicks send on a draft invoice
+  2. System validates all required fields are filled
+  3. System generates PDF of the invoice
+  4. System emails PDF to client_email
+  5. Status changes to <span class="string">"sent"</span>
+
+  <span class="flow">If</span> client has Stripe payment method on file:
+    Include a payment link in the email
+
+  <span class="flow">On failure</span> (step 4):
+    Show error to user: <span class="string">"Failed to send email. Please check the client's email address."</span>
+    Status remains <span class="string">"draft"</span></code></pre>
+
+  <hr class="sep">
+
+  <!-- ---- 7. VIEWS ---- -->
+  <h3 id="spec-views">7. Views</h3>
+
+  <p>
+    A <strong>View</strong> describes a page or UI component layout. Unlike a Flow,
+    which is a sequence of user actions, a View describes <em>what the user sees</em>
+    &mdash; data layout, filtering, grouping, and visual treatment.
+  </p>
+
+<pre><code><span class="flow">View:</span> Dashboard
+  Show tasks grouped by status in a kanban board.
+  User can filter by assignee and priority.
+  Show overdue tasks highlighted in red.</code></pre>
+
+  <div class="spec-block">
+    <h4>Syntax Rules</h4>
+    <p>
+      <code>View:</code> is followed by the view name. The body is free-form
+      description of the layout, data displayed, filtering, and visual behavior.
+      The LLM translates this into a page or component.
+    </p>
+    <h4>When to Use View vs. Flow</h4>
+    <p>
+      Use <code>Flow:</code> when describing a <strong>sequence of actions</strong>
+      with numbered steps ("User does X, System does Y"). Use <code>View:</code> when
+      describing a <strong>page layout or data display</strong> ("Show X grouped by Y,
+      filter by Z"). If it has numbered steps, it's a Flow. If it describes what
+      appears on screen, it's a View.
+    </p>
+  </div>
+
+  <p>
+    Views can include <code>Pin:</code> blocks to constrain specific UI choices:
+  </p>
+
+<pre><code><span class="flow">View:</span> Task Board
+  Show tasks in a draggable kanban board with columns: To Do, In Progress, Done.
+  Each card shows title, priority badge, and assignee avatar.
+
+  <span class="pin">Pin:</span>
+    Use <span class="type">@hello-pangea/dnd</span> for drag-and-drop</code></pre>
+
+  <hr class="sep">
+
+  <!-- ---- 8. PIN ---- -->
+  <h3 id="spec-pin">8. Pinning (<code>pin:</code>)</h3>
+
+  <p>
+    The <code>Pin:</code> block is the escape hatch. Anything inside a pin is a
+    <strong>hard constraint</strong> the LLM must not deviate from. Use it when
+    you care about a specific detail.
+  </p>
+
+<pre><code><span class="keyword">Feature:</span> <span class="string">Authentication</span>
+  <span class="keyword">using:</span> <span class="type">Supabase Auth</span>
+
+  Users can sign up with email or Google.
+
+  <span class="pin">Pin:</span>
+    Passwords must be at least 12 characters
+    Use zxcvbn for password strength validation
+    Rate limit: 5 attempts per minute per IP
+    After 10 failed attempts, lock account for 30 minutes</code></pre>
+
+  <p>
+    Pins can also appear inside flows to constrain specific steps:
+  </p>
+
+<pre><code><span class="flow">Flow:</span> Generate Invoice PDF
+  1. System renders the invoice as a PDF
+  2. System stores the PDF in file storage
+
+  <span class="pin">Pin:</span>
+    Use <span class="type">@react-pdf/renderer</span> for PDF generation
+    PDF page size: A4
+    Include company logo from <span class="type">Profile.logo_url</span></code></pre>
+
+  <div class="spec-block">
+    <h4>Pin vs. Description</h4>
+    <p>
+      Regular description text is <strong>guidance</strong> &mdash; the LLM should follow
+      it but has discretion in how. Pinned text is a <strong>requirement</strong> &mdash;
+      the LLM must implement it exactly as stated. Think of description as "should"
+      and pin as "must."
+    </p>
+  </div>
+
+  <hr class="sep">
+
+  <!-- ---- 8. LITERAL ---- -->
+  <h3 id="spec-literal">9. Literal Code (<code>literal:</code>)</h3>
+
+  <p>
+    When you need the LLM to use <em>exact</em> code, use a <code>Literal:</code> block.
+    The LLM incorporates this code verbatim &mdash; no modifications, no
+    "improvements." This is the ultimate override.
+  </p>
+
+<pre><code><span class="flow">Flow:</span> Validate Session
+
+  <span class="pin">Literal:</span> <span class="type">typescript</span>
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session) {
+      redirect('/login')
+    }
+    if (isExpired(session)) {
+      await supabase.auth.refreshSession()
+    }</code></pre>
+
+  <div class="spec-block">
+    <h4>Syntax Rules</h4>
+    <p>
+      <code>Literal:</code> is followed by a language identifier (<code>typescript</code>,
+      <code>sql</code>, <code>css</code>, etc.). The indented code block that follows is
+      treated as verbatim source. The LLM must place this code in the appropriate
+      file without alteration.
+    </p>
+    <h4>When to Use</h4>
+    <p>
+      Use <code>Literal:</code> sparingly. It defeats the purpose of CaT (letting the LLM
+      decide implementation). Good uses: security-critical code, exact SQL queries,
+      vendor-specific API calls, performance-sensitive logic.
+    </p>
+  </div>
+
+  <hr class="sep">
+
+  <!-- ---- 9. CONSTRAINTS ---- -->
+  <h3 id="spec-constraints">10. Constraints</h3>
+
+  <p>
+    <strong>Constraints</strong> define non-functional requirements: performance,
+    security, accessibility, and operational rules.
+  </p>
+
+<pre><code><span class="keyword">Feature:</span> <span class="string">API</span>
+
+  <span class="pin">Constraint:</span> <span class="label">performance</span>
+    All API endpoints must respond in under 500ms at p99
+
+  <span class="pin">Constraint:</span> <span class="label">security</span>
+    All database queries must use Row Level Security
+    No raw SQL in application code &mdash; use the Supabase client
+
+  <span class="pin">Constraint:</span> <span class="label">accessibility</span>
+    All pages must score 90+ on Lighthouse accessibility</code></pre>
+
+  <div class="spec-block">
+    <h4>Scope</h4>
+    <p>
+      Constraints can appear at the feature level (apply to that feature) or in
+      <code>system.cat</code> (apply globally). Feature-level constraints override
+      system-level ones.
+    </p>
+  </div>
+
+  <hr class="sep">
+
+  <!-- ---- 10. REFERENCES ---- -->
+  <h3 id="spec-refs">11. References Between Specs</h3>
+
+  <p>
+    Specs can reference models and features from other files by name. The
+    transpiler resolves references across the entire <code>spec/</code> directory.
+  </p>
+
+<pre><code><span class="comment"># In spec/features/invoices.cat</span>
+
+<span class="keyword">Feature:</span> <span class="string">Invoices</span>
+
+  <span class="keyword">Model:</span> <span class="type">Invoice</span>
+    <span class="symbol">owner</span>: reference to <span class="type">Profile</span>    <span class="comment"># defined in models.cat</span>
+
+  <span class="flow">Flow:</span> Send Invoice
+    ...
+    4. System emails PDF via <span class="type">EmailService</span>  <span class="comment"># defined in email.cat</span></code></pre>
+
+  <div class="spec-block">
+    <h4>Resolution Rules</h4>
+    <p>
+      Model names (<code>Profile</code>, <code>Invoice</code>) are globally unique across
+      the spec. Feature names are also globally unique. If two files define the same
+      model, the transpiler reports an error.
+    </p>
+    <p>
+      Forward references are allowed &mdash; you can reference a model before it's defined
+      in another file. The transpiler reads all files before resolving.
+    </p>
+    <h4>Shared Models</h4>
+    <p>
+      If a model is referenced by multiple features (e.g., <code>Profile</code> used by
+      both <code>auth.cat</code> and <code>tasks.cat</code>), it should live in a dedicated
+      <code>models.cat</code> file. This avoids ambiguous ownership and ensures the
+      transpiler can correctly track dependencies for incremental transpilation.
+    </p>
+  </div>
+
+  <hr class="sep">
+
+  <!-- ---- 11. CONFIG ---- -->
+  <h3 id="spec-config">12. Config (<code>.cat/config.yaml</code>)</h3>
+
+  <p>
+    The config file controls how the <strong>transpiler</strong> operates. It lives outside
+    <code>spec/</code> because it's infrastructure, not specification. The stack is
+    defined in <code>system.cat</code> (part of the spec) &mdash; the config only holds
+    transpiler settings and provider paths.
+  </p>
+
+<pre><code><span class="comment"># .cat/config.yaml</span>
+
+<span class="keyword">version:</span> <span class="string">0.1</span>
+
+<span class="keyword">transpiler:</span>
+  <span class="label">model:</span>     <span class="string">claude-sonnet-4</span>
+  <span class="label">strategy:</span>  <span class="string">incremental</span>    <span class="comment"># or "full" to regenerate everything</span>
+  <span class="label">output:</span>    <span class="string">src/</span>
+  <span class="label">retries:</span>   <span class="string">2</span>              <span class="comment"># self-correction attempts on build failure</span>
+
+<span class="keyword">providers:</span>
+  <span class="label">path:</span> <span class="string">.cat/providers/</span></code></pre>
+
+  <hr class="sep">
+
+  <!-- ---- 12. CONVENTIONS ---- -->
+  <h3 id="spec-conventions">13. Conventions &amp; Style Guide</h3>
+
+  <div class="card-grid">
+    <div class="card">
+      <h3>Naming</h3>
+      <p>
+        Models: <code>PascalCase</code><br>
+        Fields: <code>snake_case</code><br>
+        Features: <code>Title Case</code><br>
+        Files: <code>kebab-case.cat</code>
+      </p>
+    </div>
+    <div class="card">
+      <h3>Indentation</h3>
+      <p>
+        2 spaces for nesting. Blocks are defined by their keyword
+        and indentation level, similar to Python or YAML.
+      </p>
+    </div>
+    <div class="card">
+      <h3>Comments</h3>
+      <p>
+        Lines starting with <code>#</code> are comments. Comments are
+        passed to the LLM as additional context but have no semantic meaning.
+      </p>
+    </div>
+    <div class="card">
+      <h3>Ordering</h3>
+      <p>
+        Within a feature: description first, then <code>using:</code>,
+        then <code>Model:</code>, then <code>Flow:</code>, then <code>View:</code>,
+        then <code>Pin:</code>, then <code>Constraint:</code>.
+      </p>
+    </div>
+  </div>
+
+  <h3>Keywords Reference</h3>
+  <table>
+    <tr><th>Keyword</th><th>Context</th><th>Purpose</th></tr>
+    <tr><td><code>System:</code></td><td>system.cat only</td><td>Declares the system name and description</td></tr>
+    <tr><td><code>Stack:</code></td><td>system.cat only</td><td>Defines the technology stack</td></tr>
+    <tr><td><code>Feature:</code></td><td>any .cat file</td><td>Declares a feature / capability</td></tr>
+    <tr><td><code>using:</code></td><td>inside Feature</td><td>Binds to one or more providers (comma-separated)</td></tr>
+    <tr><td><code>Model:</code></td><td>Feature or standalone</td><td>Defines a data model / entity</td></tr>
+    <tr><td><code>Invariant:</code></td><td>inside Model</td><td>Business rule on a model</td></tr>
+    <tr><td><code>Flow:</code></td><td>inside Feature</td><td>Describes a user-facing behavior sequence</td></tr>
+    <tr><td><code>View:</code></td><td>inside Feature</td><td>Describes a page or UI component layout</td></tr>
+    <tr><td><code>On failure:</code></td><td>inside Flow</td><td>Error handling / recovery logic</td></tr>
+    <tr><td><code>If / When:</code></td><td>inside Flow</td><td>Conditional branching</td></tr>
+    <tr><td><code>Pin:</code></td><td>Feature or Flow</td><td>Hard constraint the LLM must follow</td></tr>
+    <tr><td><code>Literal:</code></td><td>Feature or Flow</td><td>Verbatim code block</td></tr>
+    <tr><td><code>Constraint:</code></td><td>Feature or system.cat</td><td>Non-functional requirement</td></tr>
+  </table>
+
+</section>
+
+<!-- ==================== FULL EXAMPLE ==================== -->
+<section id="example">
+  <h2>Full Example: FreelanceOS</h2>
+
+  <p class="lead">
+    A complete CaT spec for a simple invoicing app. Three files,
+    fully readable, producing a full-stack Supabase + Next.js application.
+  </p>
+
+  <h3>spec/system.cat</h3>
+<pre><code><span class="keyword">System:</span> <span class="string">FreelanceOS</span>
+
+A simple invoicing app for freelancers.
+Manage clients, create invoices, track payments.
+
+<span class="keyword">Stack:</span>
+  <span class="label">framework:</span>  <span class="type">Next.js</span> (App Router)
+  <span class="label">language:</span>   <span class="type">TypeScript</span>
+  <span class="label">database:</span>   <span class="type">Supabase</span>
+  <span class="label">auth:</span>       <span class="type">Supabase Auth</span>
+  <span class="label">styling:</span>    <span class="type">Tailwind</span> + <span class="type">shadcn/ui</span>
+  <span class="label">deploy:</span>     <span class="type">Vercel</span>
+
+<span class="pin">Constraint:</span> <span class="label">security</span>
+  All database access must use Row Level Security.
+  Users can only access their own data.</code></pre>
+
+  <h3>spec/auth.cat</h3>
+<pre><code><span class="keyword">Feature:</span> <span class="string">Authentication</span>
+  <span class="keyword">using:</span> <span class="type">Supabase Auth</span>
+
+  Users can sign up with email or Google OAuth.
+  After first login, a Profile is created automatically.
+
+  <span class="keyword">Model:</span> <span class="type">Profile</span>
+    <span class="symbol">id</span>:           uuid, primary key <span class="comment"># matches auth.users.id</span>
+    <span class="symbol">display_name</span>: text
+    <span class="symbol">avatar_url</span>:   text, nullable
+    <span class="symbol">created_at</span>:   timestamp, auto
+
+  <span class="flow">Flow:</span> Sign Up
+    1. User enters email and password, or clicks "Sign in with Google"
+    2. System creates auth account
+    3. System sends verification email (email signup only)
+    4. On first login, system creates a Profile row
+
+  <span class="flow">Flow:</span> Sign In
+    1. User enters credentials or uses Google
+    2. System redirects to /dashboard
+
+  <span class="flow">Flow:</span> Password Reset
+    1. User enters email on /forgot-password
+    2. System sends a reset link
+    3. User sets a new password
+
+  <span class="pin">Pin:</span>
+    Passwords must be at least 10 characters
+    Session duration: 7 days
+    Refresh token rotation enabled</code></pre>
+
+  <h3>spec/features/invoices.cat</h3>
+<pre><code><span class="keyword">Feature:</span> <span class="string">Invoices</span>
+  <span class="keyword">using:</span> <span class="type">Supabase</span>, <span class="type">Resend</span>
+
+  Users can create, edit, send, and track invoices.
+  Each invoice belongs to the logged-in user.
+
+  <span class="keyword">Model:</span> <span class="type">Invoice</span>
+    <span class="symbol">id</span>:           uuid, primary key
+    <span class="symbol">owner</span>:        reference to <span class="type">Profile</span>
+    <span class="symbol">client_name</span>:  text
+    <span class="symbol">client_email</span>: email
+    <span class="symbol">status</span>:       <span class="string">draft</span> | <span class="string">sent</span> | <span class="string">paid</span> | <span class="string">overdue</span>
+    <span class="symbol">due_date</span>:     date
+    <span class="symbol">created_at</span>:   timestamp, auto
+
+    <span class="pin">Invariant:</span> owner must equal the authenticated user
+    <span class="pin">Invariant:</span> must have at least one LineItem when status is <span class="string">"sent"</span>
+
+  <span class="keyword">Model:</span> <span class="type">LineItem</span>
+    <span class="symbol">id</span>:          uuid, primary key
+    <span class="symbol">invoice</span>:     reference to <span class="type">Invoice</span>
+    <span class="symbol">description</span>: text
+    <span class="symbol">quantity</span>:    integer, min 1
+    <span class="symbol">rate</span>:        decimal
+
+  <span class="flow">Flow:</span> Create Invoice
+    1. User clicks "New Invoice"
+    2. User fills in client name, email, and line items
+    3. System calculates totals (subtotal, tax, total)
+    4. Invoice is saved as <span class="string">"draft"</span>
+
+  <span class="flow">Flow:</span> Send Invoice
+    1. User clicks "Send" on a draft invoice
+    2. System validates required fields
+    3. System generates a PDF
+    4. System emails the PDF to client_email
+    5. Status changes to <span class="string">"sent"</span>
+
+    <span class="flow">On failure</span> (step 4):
+      Show error: <span class="string">"Could not send email. Check the address."</span>
+      Status remains <span class="string">"draft"</span>
+
+    <span class="pin">Pin:</span>
+      PDF generation: use <span class="type">@react-pdf/renderer</span>
+
+  <span class="flow">Flow:</span> Mark as Paid
+    1. User clicks "Mark as Paid" on a sent invoice
+    2. Status changes to <span class="string">"paid"</span>
+    3. System records payment date
+
+  <span class="flow">View:</span> Dashboard
+    Show a summary: total outstanding, total paid this month, overdue count.
+    List recent invoices with status badges.
+    User can filter by status and date range.
+
+  <span class="pin">Constraint:</span> <span class="label">performance</span>
+    Dashboard must load in under 1 second with up to 1000 invoices</code></pre>
+
+  <hr class="sep">
+
+  <p style="text-align:center; color: var(--text-muted); font-size: 0.9rem; padding: 2rem 0;">
+    CaT — Code as Text &middot; Draft Specification v0.2 &middot; April 2026
+  </p>
+</section>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,54 @@
+Feature: Task Management
+  using: Supabase
+
+  Users can create, assign, and track tasks within their team.
+
+  Model: Team
+    id:         uuid, primary key
+    name:       text
+    created_at: timestamp, auto
+
+  Model: Project
+    id:          uuid, primary key
+    name:        text
+    team:        reference to Team
+    created_at:  timestamp, auto
+
+  Model: Task
+    id:          uuid, primary key
+    title:       text
+    description: text, nullable
+    assignee:    reference to Profile
+    project:     reference to Project
+    status:      todo | in_progress | done
+    priority:    low | medium | high | urgent
+    due_date:    date, nullable
+    created_by:  reference to Profile
+    created_at:  timestamp, auto
+
+    Invariant: assignee must belong to the same team as created_by
+
+  Flow: Create Task
+    1. User clicks "New Task"
+    2. User fills in title, description, assignee, and priority
+    3. Task is saved with status "todo"
+
+  Flow: Update Status
+    1. User drags task to a new column or clicks a status button
+    2. Status changes to the selected value
+
+  Flow: Assign Task
+    1. User picks a team member from a dropdown
+    2. System updates the assignee
+    3. System notifies the new assignee
+
+  Flow: Dashboard
+    Show tasks grouped by status in a kanban board.
+    User can filter by assignee and priority.
+    Show overdue tasks highlighted in red.
+
+  Constraint: performance
+    Dashboard must load in under 1 second with up to 500 tasks
+
+  Pin:
+    Use @hello-pangea/dnd for drag-and-drop on the kanban board

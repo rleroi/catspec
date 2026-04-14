@@ -1,0 +1,16 @@
+System: TaskFlow
+
+A simple task management app for small teams.
+Create projects, assign tasks, track progress.
+
+Stack:
+  framework:  Next.js (App Router)
+  language:   TypeScript
+  database:   Supabase
+  auth:       Supabase Auth
+  styling:    Tailwind + shadcn/ui
+  deploy:     Vercel
+
+Constraint: security
+  All database access must use Row Level Security.
+  Users can only access data within their own team.
