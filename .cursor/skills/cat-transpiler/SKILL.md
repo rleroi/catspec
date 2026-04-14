@@ -3,7 +3,7 @@ name: cat-transpiler
 description: >-
   Validate, enrich, and transpile CaT (Code as Text) spec files into working
   code. Use when the user asks to transpile, validate, or build from .cat spec
-  files, or when working in a project that has a spec/ directory with .cat files.
+  files, or when working in a project that has a bacon/ directory with .cat files.
 ---
 
 # CaT Transpiler
@@ -45,17 +45,17 @@ status: pass | fail
 commit: b4d8e1f
 last_transpiled_commit: a3f7c2e       # null on first run
 files_scanned:
-  - spec/system.cat
-  - spec/auth.cat
+  - bacon/system.cat
+  - bacon/auth.cat
 models: [Profile, Invoice, LineItem]
 features: [Authentication, Invoices, Dashboard]
 errors:
-  - file: spec/auth.cat
+  - file: bacon/auth.cat
     line: 12
     code: E_DUPLICATE_MODEL
-    message: "Model 'Profile' is already defined in spec/models.cat"
+    message: "Model 'Profile' is already defined in bacon/models.cat"
 warnings:
-  - file: spec/features/dashboard.cat
+  - file: bacon/features/dashboard.cat
     line: 1
     code: W_SPARSE_FEATURE
     message: "Feature 'Dashboard' is very sparse — the LLM will make all decisions"
@@ -65,7 +65,7 @@ warnings:
 
 | Code | Meaning |
 |------|---------|
-| `E_NO_SYSTEM` | Missing `spec/system.cat` |
+| `E_NO_SYSTEM` | Missing `bacon/system.cat` |
 | `E_NO_SYSTEM_DECL` | `system.cat` has no `System:` keyword |
 | `E_MISSING_STACK` | `system.cat` has no `Stack:` block |
 | `E_DUPLICATE_MODEL` | Same Model name in multiple files |
@@ -88,7 +88,7 @@ status: proposed | approved | no_changes
 questions_asked: 3
 questions_answered: 3
 files_modified:
-  - file: spec/features/tasks.cat
+  - file: bacon/features/tasks.cat
     changes:
       - type: model_added
         name: Notification
@@ -96,18 +96,18 @@ files_modified:
       - type: using_added
         value: Resend
         reason: "Email provider needed for notification flow"
-  - file: spec/auth.cat
+  - file: bacon/auth.cat
     changes:
       - type: flow_added
         name: Create Team
         reason: "Team onboarding flow (from clarification: create_on_signup)"
-  - file: spec/models.cat
+  - file: bacon/models.cat
     changes:
       - type: model_moved
         name: Team
         reason: "Shared model moved from tasks.cat — referenced by multiple features"
 files_unchanged:
-  - spec/system.cat
+  - bacon/system.cat
 ```
 
 Change types: `model_added`, `model_moved`, `flow_added`, `view_added`,
@@ -120,7 +120,7 @@ status: no_changes
 questions_asked: 0
 questions_answered: 0
 files_modified: []
-files_unchanged: [spec/system.cat, spec/auth.cat]
+files_unchanged: [bacon/system.cat, bacon/auth.cat]
 ```
 
 ### `cat-result` — Phase 4 output
@@ -131,14 +131,14 @@ commit: b4d8e1f
 previous_commit: a3f7c2e
 files_created:
   - path: src/app/(auth)/login/page.tsx
-    source: spec/auth.cat
+    source: bacon/auth.cat
     action: created
 files_modified:
   - path: package.json
     action: updated
     reason: "Added @supabase/supabase-js, @supabase/ssr"
 spec_enrichments:
-  - file: spec/auth.cat
+  - file: bacon/auth.cat
     added: "Pin: ui_library = shadcn/ui"
     reason: "Stack includes Tailwind; shadcn/ui is the idiomatic choice"
 build:
@@ -158,19 +158,19 @@ build:
 
 ## Phase 1: Validate
 
-Read all `.cat` files in `spec/` and `.cat/config.yaml`. Check for errors.
+Read all `.cat` files in `bacon/` and `.cat/config.yaml`. Check for errors.
 
 ### Validation checks
 
 Read all files, then run all checks and collect errors/warnings before reporting.
-Required: `spec/system.cat` with `System:` + `Stack:`, `.cat/config.yaml` with
+Required: `bacon/system.cat` with `System:` + `Stack:`, `.cat/config.yaml` with
 `version` + `transpiler`, and every `Feature:` must have a name.
 
 **Fatal errors** (block transpilation):
 
 | Check | Error |
 |-------|-------|
-| Missing `spec/system.cat` | "No system.cat found. Every CaT project needs one." |
+| Missing `bacon/system.cat` | "No system.cat found. Every CaT project needs one." |
 | Missing `System:` keyword in system.cat | "system.cat must declare `System: <name>`" |
 | Missing `Stack:` in system.cat | "system.cat must declare a `Stack:` block" |
 | Duplicate Model names across files | "Model `X` is defined in both `a.cat` and `b.cat`" |
@@ -331,7 +331,7 @@ After generating all files:
 When `.cat/purr` already exists:
 
 1. Read `last_transpiled_commit` from the purr file
-2. Run `git diff <last_transpiled_commit>..HEAD -- spec/` to get changed `.cat` files
+2. Run `git diff <last_transpiled_commit>..HEAD -- bacon/` to get changed `.cat` files
 3. If no spec files changed, skip transpilation entirely (exit early)
 4. Build a dependency graph from the purr file: for each model, which spec files
    reference it. If `models.cat` changes a shared model, mark all dependent spec
@@ -348,9 +348,9 @@ last_transpiled_commit: a3f7c2e
 last_transpiled_at: 2026-04-14T10:30:00Z
 
 dependencies:
-  Team: [spec/auth.cat, spec/features/tasks.cat]
-  Profile: [spec/auth.cat, spec/features/tasks.cat]
-  Task: [spec/features/tasks.cat]
+  Team: [bacon/auth.cat, bacon/features/tasks.cat]
+  Profile: [bacon/auth.cat, bacon/features/tasks.cat]
+  Task: [bacon/features/tasks.cat]
 
 migrations:
   - file: supabase/migrations/001_create_teams.sql
@@ -360,7 +360,7 @@ migrations:
     models: [Profile]
     depends_on: [001_create_teams.sql]
 
-spec/auth.cat:
+bacon/auth.cat:
   content_hash: a1b2c3d4
   outputs:
     - src/app/(auth)/login/page.tsx

@@ -348,7 +348,7 @@
     <div class="card">
       <h3>Spec is the Source</h3>
       <p>
-        The <code>spec/</code> folder is the source of truth. Humans author
+        The <code>bacon/</code> folder is the source of truth. Humans author
         and version <code>.cat</code> files. Code in <code>src/</code> is a derived artifact.
       </p>
     </div>
@@ -392,20 +392,20 @@
 
   <p class="lead">
     The proof of concept targets a <strong>Supabase + Next.js</strong> stack to keep scope
-    manageable while demonstrating the full loop: spec → transpile → PR → deploy.
+    manageable while demonstrating the full loop: bacon → transpile → PR → deploy.
   </p>
 
   <h3>Repository Structure</h3>
 <pre><code>my-cat-project/
 ├── .github/
 │   └── workflows/
-│       └── transpile.yml       <span class="comment"># triggers on spec/ changes</span>
+│       └── transpile.yml       <span class="comment"># triggers on bacon/ changes</span>
 ├── .cat/
 │   ├── config.yaml             <span class="comment"># stack, model, preferences</span>
 │   ├── purr          <span class="comment"># transpilation metadata (hashes, outputs, deps)</span>
 │   └── providers/              <span class="comment"># provider profiles</span>
 │       └── supabase.yaml
-├── spec/                       <span class="comment"># source of truth (human-edited)</span>
+├── bacon/                      <span class="comment"># source of truth (human-edited)</span>
 │   ├── system.cat
 │   ├── auth.cat
 │   ├── models.cat
@@ -422,7 +422,7 @@
 
   <h3>Transpilation Pipeline</h3>
   <div class="flow-diagram">
-    <span class="step">spec/ changed</span>
+    <span class="step">bacon/ changed</span>
     <span class="arrow">→</span>
     <span class="step">git push</span>
     <span class="arrow">→</span>
@@ -445,7 +445,7 @@
     spec files as <code>Pin:</code> blocks &mdash; keeping the spec as the single source of truth.
     The <code>.cat/purr</code> file tracks <strong>operational metadata</strong> only: content hashes,
     generated output paths, cross-feature dependencies, and the <strong>last transpiled git commit</strong>,
-    so incremental runs can <code>git diff</code> against it to find only the spec files that changed.
+    so incremental runs can <code>git diff</code> against it to find only the <code>.cat</code> files that changed.
   </p>
 <pre><code><span class="comment"># .cat/purr</span>
 
@@ -454,20 +454,20 @@
 <span class="keyword">last_transpiled_at</span>: <span class="string">2026-04-14T10:30:00Z</span>
 
 <span class="comment"># Per-file state</span>
-<span class="keyword">spec/auth.cat</span>:
+<span class="keyword">bacon/auth.cat</span>:
   content_hash: a1b2c3d4
   outputs:
     - src/app/(auth)/login/page.tsx
     - src/app/(auth)/signup/page.tsx
     - src/lib/auth.ts
 
-<span class="keyword">spec/features/invoices.cat</span>:
+<span class="keyword">bacon/features/invoices.cat</span>:
   content_hash: e5f6g7h8
   outputs:
     - src/app/invoices/page.tsx
     - src/supabase/migrations/002_invoices.sql
   dependencies:
-    - spec/models.cat <span class="comment"># uses shared Invoice model</span>
+    - bacon/models.cat <span class="comment"># uses shared Invoice model</span>
   migrations:
     - 002_invoices.sql
     depends_on: 001_auth.sql</code></pre>
@@ -476,7 +476,7 @@
   <table>
     <tr><th>Component</th><th>What</th><th>Priority</th></tr>
     <tr><td>GitHub Template</td><td>Repo scaffold with folder structure, workflow, config</td><td>P0</td></tr>
-    <tr><td>CaT CLI</td><td><code>cat transpile</code> &mdash; reads spec, calls LLM, writes to <code>src/</code></td><td>P0</td></tr>
+    <tr><td>CaT CLI</td><td><code>cat transpile</code> &mdash; reads bacon, calls LLM, writes to <code>src/</code></td><td>P0</td></tr>
     <tr><td>Purr File</td><td>Track content hashes, outputs, dependencies, incremental diffs</td><td>P0</td></tr>
     <tr><td>Supabase Provider</td><td>Provider profile + system prompt tuning for Supabase idioms</td><td>P1</td></tr>
     <tr><td>GitHub Action</td><td>CI wrapper around the CLI, PR creation</td><td>P1</td></tr>
@@ -515,7 +515,7 @@
   <h3 id="spec-files">1. File Structure</h3>
 
   <p>
-    A CaT project contains a <code>spec/</code> directory with <code>.cat</code> files.
+    A CaT project contains a <code>bacon/</code> directory with <code>.cat</code> files.
     Each file defines one logical unit: a feature, a set of data models, or the
     system itself. Files can be organized in subdirectories for larger projects.
   </p>
@@ -528,12 +528,12 @@
       <code>billing.cat</code>.
     </p>
     <p>
-      One file is required: <code>spec/system.cat</code> &mdash; the root declaration
+      One file is required: <code>bacon/system.cat</code> &mdash; the root declaration
       of the system.
     </p>
   </div>
 
-<pre><code>spec/
+<pre><code>bacon/
 ├── system.cat              <span class="comment"># required &mdash; system declaration</span>
 ├── auth.cat                <span class="comment"># one file per feature or domain</span>
 ├── models.cat              <span class="comment"># shared data models</span>
@@ -963,10 +963,10 @@ create invoices, accept payments, and track revenue.
 
   <p>
     Specs can reference models and features from other files by name. The
-    transpiler resolves references across the entire <code>spec/</code> directory.
+    transpiler resolves references across the entire <code>bacon/</code> directory.
   </p>
 
-<pre><code><span class="comment"># In spec/features/invoices.cat</span>
+<pre><code><span class="comment"># In bacon/features/invoices.cat</span>
 
 <span class="keyword">Feature:</span> <span class="string">Invoices</span>
 
@@ -1004,7 +1004,7 @@ create invoices, accept payments, and track revenue.
 
   <p>
     The config file controls how the <strong>transpiler</strong> operates. It lives outside
-    <code>spec/</code> because it's infrastructure, not specification. The stack is
+    <code>bacon/</code> because it's infrastructure, not specification. The stack is
     defined in <code>system.cat</code> (part of the spec) &mdash; the config only holds
     transpiler settings and provider paths.
   </p>
@@ -1090,7 +1090,7 @@ create invoices, accept payments, and track revenue.
     fully readable, producing a full-stack Supabase + Next.js application.
   </p>
 
-  <h3>spec/system.cat</h3>
+  <h3>bacon/system.cat</h3>
 <pre><code><span class="keyword">System:</span> <span class="string">FreelanceOS</span>
 
 A simple invoicing app for freelancers.
@@ -1108,7 +1108,7 @@ Manage clients, create invoices, track payments.
   All database access must use Row Level Security.
   Users can only access their own data.</code></pre>
 
-  <h3>spec/auth.cat</h3>
+  <h3>bacon/auth.cat</h3>
 <pre><code><span class="keyword">Feature:</span> <span class="string">Authentication</span>
   <span class="keyword">using:</span> <span class="type">Supabase Auth</span>
 
@@ -1141,7 +1141,7 @@ Manage clients, create invoices, track payments.
     Session duration: 7 days
     Refresh token rotation enabled</code></pre>
 
-  <h3>spec/features/invoices.cat</h3>
+  <h3>bacon/features/invoices.cat</h3>
 <pre><code><span class="keyword">Feature:</span> <span class="string">Invoices</span>
   <span class="keyword">using:</span> <span class="type">Supabase</span>, <span class="type">Resend</span>
 

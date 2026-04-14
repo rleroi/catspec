@@ -1,14 +1,14 @@
 last_transpiled_commit: null
 last_transpiled_at: "2026-04-14T12:00:00Z"
 
-spec/system.cat:
+bacon/system.cat:
   content_hash: 9f3a1b2c
   outputs:
     - src/middleware.ts
     - src/lib/supabase/client.ts
     - src/lib/supabase/server.ts
 
-spec/auth.cat:
+bacon/auth.cat:
   content_hash: d4e5f6a7
   outputs:
     - src/app/(auth)/login/page.tsx
@@ -16,7 +16,7 @@ spec/auth.cat:
     - src/supabase/migrations/001_create_teams.sql
     - src/supabase/migrations/002_create_profiles.sql
 
-spec/features/tasks.cat:
+bacon/features/tasks.cat:
   content_hash: b8c9d0e1
   outputs:
     - src/app/dashboard/page.tsx
@@ -29,7 +29,7 @@ spec/features/tasks.cat:
     - src/supabase/migrations/003_create_projects.sql
     - src/supabase/migrations/004_create_tasks.sql
   dependencies:
-    - spec/auth.cat
+    - bacon/auth.cat
   migrations:
     - file: 003_create_projects.sql
       depends_on: [002_create_profiles.sql]
