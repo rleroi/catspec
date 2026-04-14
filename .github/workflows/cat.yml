@@ -1,0 +1,27 @@
+name: CaT example
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+jobs:
+  build-example:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: example
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: example/package-lock.json
+
+      - name: Install
+        run: npm install
+
+      - name: Build
+        run: npm run build
