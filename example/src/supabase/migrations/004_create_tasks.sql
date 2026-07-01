@@ -48,7 +48,7 @@ create policy "Users can update tasks in their team"
     )
   );
 
--- In-app notifications (LLM decision: q1=pick → in-app DB notifications)
+-- Notification model, bacon/features/tasks.md
 create table public.notifications (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references public.profiles(id) on delete cascade,

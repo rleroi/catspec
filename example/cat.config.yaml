@@ -1,0 +1,25 @@
+version: 0.1
+
+transpiler:
+  model: claude-sonnet-4
+  strategy: incremental
+  output: src/
+  retries: 2
+
+providers:
+  supabase:
+    name: Supabase
+    category: database
+    capabilities: [postgres, realtime, storage, edge-functions]
+    package: "@supabase/supabase-js"
+    ssr_package: "@supabase/ssr"
+    env: [NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY]
+  supabase-auth:
+    name: Supabase Auth
+    category: authentication
+    capabilities: [email-password, oauth, magic-link, phone-otp]
+    session: jwt
+    storage: cookie
+    package: "@supabase/supabase-js"
+    ssr_package: "@supabase/ssr"
+    env: [NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY]

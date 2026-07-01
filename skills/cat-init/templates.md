@@ -2,7 +2,7 @@
 
 Copy these into the target repo, replacing `{{PLACEHOLDERS}}`.
 
-## `.cat/config.yaml`
+## `cat.config.yaml`
 
 ```yaml
 version: 0.1
@@ -14,23 +14,28 @@ transpiler:
   retries: 2
 
 providers:
-  path: ".cat/providers/"
+  {{PROVIDER_KEY}}:
+    package: "{{PROVIDER_PACKAGE}}"
 ```
 
-## `bacon/system.cat`
+One `providers.<key>` entry per selected provider — see individual provider
+bodies below, which are all merged into this one file's `providers:` map.
 
-```text
-System: {{SYSTEM_NAME}}
+## `bacon/system.md`
 
-{{SYSTEM_DESCRIPTION}}
-
-Stack:
+```markdown
+---
+name: {{SYSTEM_NAME}}
+stack:
   framework:  {{STACK_FRAMEWORK}}
   language:   {{STACK_LANGUAGE}}
   database:   {{STACK_DATABASE}}
   auth:       {{STACK_AUTH}}
   styling:    {{STACK_STYLING}}
   deploy:     {{STACK_DEPLOY}}
+---
+
+{{SYSTEM_DESCRIPTION}}
 ```
 
 ## `.github/workflows/transpile.yml`
@@ -43,11 +48,11 @@ on:
     branches: [main, master]
     paths:
       - "bacon/**"
-      - ".cat/**"
+      - "cat.config.yaml"
   pull_request:
     paths:
       - "bacon/**"
-      - ".cat/**"
+      - "cat.config.yaml"
 
 jobs:
   cat-scaffold-check:
@@ -57,10 +62,10 @@ jobs:
 
       - name: Require CaT layout
         run: |
-          test -f bacon/system.cat
-          test -f .cat/config.yaml
-          grep -q "^System:" bacon/system.cat
-          grep -q "^Stack:" bacon/system.cat
+          test -f bacon/system.md
+          test -f cat.config.yaml
+          grep -q "^name:" bacon/system.md
+          grep -q "^stack:" bacon/system.md
           echo "CaT scaffold OK"
 
       # When `cat` CLI is available, replace with:
@@ -72,13 +77,13 @@ jobs:
 ## `.gitignore` — append block
 
 ```gitignore
-# CaT — generated / local (keep bacon/ and .cat/ committed except secrets)
+# CaT — generated / local (keep bacon/ and cat.config.yaml committed except secrets)
 src/*
 !src/.gitkeep
 .env
 .env.local
 .env.*.local
-.cat/purr
+purr
 node_modules/
 .next/
 out/
@@ -89,94 +94,65 @@ build/
 
 If you want an empty `src/` tracked before first transpile, create `src/.gitkeep` — the negation above will preserve it. Otherwise omit `src/.gitkeep` entirely and `src/` will be fully ignored until generated.
 
-## `.cat/providers/supabase.yaml`
+## Provider entries (merge into `cat.config.yaml`'s `providers:` map)
+
+Each provider is a key under `providers:` in `cat.config.yaml`, not a separate file.
+
+### `supabase`
 
 ```yaml
-name: Supabase
-category: database
-capabilities:
-  - postgres
-  - realtime
-  - storage
-  - edge-functions
-defaults:
-  client: "@supabase/supabase-js"
-  ssr: "@supabase/ssr"
-requires:
-  env:
-    - NEXT_PUBLIC_SUPABASE_URL
-    - NEXT_PUBLIC_SUPABASE_ANON_KEY
-  packages:
-    - "@supabase/supabase-js"
-    - "@supabase/ssr"
+supabase:
+  name: Supabase
+  category: database
+  capabilities: [postgres, realtime, storage, edge-functions]
+  package: "@supabase/supabase-js"
+  ssr_package: "@supabase/ssr"
+  env: [NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY]
 ```
 
-## `.cat/providers/supabase-auth.yaml`
+### `supabase-auth`
 
 ```yaml
-name: Supabase Auth
-category: authentication
-capabilities:
-  - email-password
-  - oauth
-  - magic-link
-defaults:
+supabase-auth:
+  name: Supabase Auth
+  category: authentication
+  capabilities: [email-password, oauth, magic-link]
   session: jwt
   storage: cookie
-requires:
-  env:
-    - NEXT_PUBLIC_SUPABASE_URL
-    - NEXT_PUBLIC_SUPABASE_ANON_KEY
-  packages:
-    - "@supabase/supabase-js"
-    - "@supabase/ssr"
+  package: "@supabase/supabase-js"
+  ssr_package: "@supabase/ssr"
+  env: [NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY]
 ```
 
-## `.cat/providers/stripe.yaml`
+### `stripe`
 
 ```yaml
-name: Stripe
-category: payments
-capabilities:
-  - checkout
-  - customer-portal
-  - webhooks
-requires:
-  env:
-    - STRIPE_SECRET_KEY
-    - STRIPE_WEBHOOK_SECRET
-    - NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
-  packages:
-    - stripe
+stripe:
+  name: Stripe
+  category: payments
+  capabilities: [checkout, customer-portal, webhooks]
+  package: stripe
+  env: [STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY]
 ```
 
-## `.cat/providers/resend.yaml`
+### `resend`
 
 ```yaml
-name: Resend
-category: email
-capabilities:
-  - transactional-email
-requires:
-  env:
-    - RESEND_API_KEY
-  packages:
-    - resend
+resend:
+  name: Resend
+  category: email
+  capabilities: [transactional-email]
+  package: resend
+  env: [RESEND_API_KEY]
 ```
 
-## `.cat/providers/clerk.yaml`
+### `clerk`
 
 ```yaml
-name: Clerk
-category: authentication
-capabilities:
-  - email-password
-  - oauth
-  - organizations
-requires:
-  env:
-    - NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
-    - CLERK_SECRET_KEY
-  packages:
-    - "@clerk/nextjs"
+clerk:
+  name: Clerk
+  category: authentication
+  capabilities: [email-password, oauth, organizations]
+  package: "@clerk/nextjs"
+  env: [NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY, CLERK_SECRET_KEY]
 ```

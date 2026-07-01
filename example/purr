@@ -1,23 +1,32 @@
 last_transpiled_commit: null
-last_transpiled_at: "2026-04-14T12:00:00Z"
+last_transpiled_at: "2026-07-01T20:20:00Z"
 
-bacon/system.cat:
+bacon/system.md:
   content_hash: 9f3a1b2c
   outputs:
     - src/middleware.ts
     - src/lib/supabase/client.ts
     - src/lib/supabase/server.ts
 
-bacon/auth.cat:
-  content_hash: d4e5f6a7
+bacon/models.md:
+  content_hash: a1c3e5f7
+  outputs:
+    - src/supabase/migrations/001_create_teams.sql
+
+bacon/auth.md:
+  content_hash: 2b4d6f80
   outputs:
     - src/app/(auth)/login/page.tsx
     - src/app/(auth)/signup/page.tsx
-    - src/supabase/migrations/001_create_teams.sql
     - src/supabase/migrations/002_create_profiles.sql
+  dependencies:
+    - bacon/models.md
+  migrations:
+    - file: 002_create_profiles.sql
+      depends_on: [001_create_teams.sql]
 
-bacon/features/tasks.cat:
-  content_hash: b8c9d0e1
+bacon/features/tasks.md:
+  content_hash: 3c5e7091
   outputs:
     - src/app/dashboard/page.tsx
     - src/app/tasks/page.tsx
@@ -29,7 +38,8 @@ bacon/features/tasks.cat:
     - src/supabase/migrations/003_create_projects.sql
     - src/supabase/migrations/004_create_tasks.sql
   dependencies:
-    - bacon/auth.cat
+    - bacon/models.md
+    - bacon/auth.md
   migrations:
     - file: 003_create_projects.sql
       depends_on: [002_create_profiles.sql]
