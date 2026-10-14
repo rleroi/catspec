@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CaT — Code as Text</title>
+<link rel="icon" type="image/png" href="docs/brand/favicon.png">
 <meta name="description" content="Human-readable specs in, working code out. CaT is OpenSpec's spec format plus a system layer, for projects where the transpiler writes the code.">
 <style>
   :root {
@@ -70,6 +71,9 @@
     letter-spacing: -0.02em;
   }
   nav .logo span { color: var(--accent); }
+  nav .logo { display: flex; align-items: center; gap: 0.5rem; }
+  nav .logo img { width: 28px; height: 28px; border-radius: 6px; }
+  .hero-mark { width: 120px; height: 120px; border-radius: 16px; margin-bottom: 1rem; display: block; }
   nav .links { display: flex; gap: 1.25rem; flex-wrap: wrap; }
   nav .links a {
     color: var(--text-muted);
@@ -464,7 +468,7 @@
 
 <nav>
   <div class="inner">
-    <div class="logo"><span>CaT</span> — Code as Text</div>
+    <div class="logo"><img src="docs/brand/logo-dark-64.png" alt=""><span>CaT</span> — Code as Text</div>
     <div class="links">
       <a href="#why">Why</a>
       <a href="#standards">Standards</a>
@@ -482,6 +486,7 @@
 <section class="hero">
   <div class="hero-grid">
     <div>
+      <img class="hero-mark" src="docs/brand/logo-dark.png" alt="CaT logo: a cat with bacon stripes">
       <div class="badge">Working Draft · 0.2</div>
       <h1>Your spec is the source.<br>The <em>transpiler writes the code</em>.</h1>
       <p class="sub">
