@@ -77,6 +77,6 @@ Adding a backend: one file under `src/lib/agents/` implementing
 - Everything operates on plain files: `bacon/*.md`, `cat.config.yaml`,
   `purr`. No daemon, no hidden state.
 - The parser in `src/lib/spec.ts` is CaT's own. The OpenSpec conformance
-  test (`test/openspec-conformance.test.ts`) projects the example's
+  test (`test/openspec-conformance.test.ts`) projects the TaskFlow fixture's
   `## Purpose` and `## Requirements` sections and runs the real
   `openspec validate` on them, so the grammar cannot drift from OpenSpec.

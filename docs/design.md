@@ -109,7 +109,7 @@ form, and adds the system layer.
 
 The known risks of spec-as-source are non-determinism across runs, the
 inflexibility of "a fix is a spec change", and the absence of proof at
-scale. The planned answer is the twenty-change experiment: take `example/`
+scale. The planned answer is the twenty-change experiment: take [catspec-example](https://github.com/rleroi/catspec-example)
 through twenty real spec changes with no hand edits to `src/`. If that fails,
 the project stops.
 

@@ -54,7 +54,7 @@ A spec file that has a `## Requirements` section, with its frontmatter,
 `## Model:`, `## Flow:` and `## View:` sections, and verbatim blocks removed,
 MUST be a valid OpenSpec `spec.md`. `## Purpose` and `## Requirements` are
 OpenSpec's sections, used unchanged. The CLI's conformance test enforces
-this against the example project.
+this against the TaskFlow fixture in `cli/test/fixtures/taskflow`.
 
 Two deliberate deviations from OpenSpec guidance, both because the
 transpiler, not a human, decides how to implement:

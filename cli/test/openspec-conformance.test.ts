@@ -2,7 +2,7 @@
  * SPEC.md §1.2: a spec file that has a `## Requirements` section, with its
  * CaT-only constructs removed, MUST be a valid OpenSpec `spec.md`.
  *
- * This test projects each example spec file to its OpenSpec view and runs
+ * This test projects each TaskFlow fixture spec file to its OpenSpec view and runs
  * the real `openspec validate --specs` on the result. Non-strict on purpose:
  * OpenSpec warns on bodies that use SHOULD without SHALL/MUST, and CaT keeps
  * SHOULD as a documented deviation.
@@ -18,7 +18,7 @@ import { findMarkdownFiles } from "../src/lib/discover.js";
 
 const run = promisify(execFile);
 const OPENSPEC = "@fission-ai/openspec@1.14.1";
-const EXAMPLE = resolve(__dirname, "..", "..", "example");
+const EXAMPLE = resolve(__dirname, "fixtures", "taskflow");
 
 /** Keep only `## Purpose` and `## Requirements` (each up to the next `## ` heading). */
 export function projectToOpenSpec(title: string, raw: string): string | null {
@@ -39,8 +39,8 @@ export function projectToOpenSpec(title: string, raw: string): string | null {
   return `# ${title} Specification\n\n${keep.join("\n").trim()}\n`;
 }
 
-describe("OpenSpec conformance of the example project", () => {
-  it("every example spec file with a Requirements section validates as an OpenSpec spec", async () => {
+describe("OpenSpec conformance of the TaskFlow fixture", () => {
+  it("every fixture spec file with a Requirements section validates as an OpenSpec spec", async () => {
     const files = await findMarkdownFiles(join(EXAMPLE, "bacon"));
     const root = await mkdtemp(join(tmpdir(), "catspec-openspec-"));
     try {

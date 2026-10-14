@@ -9,7 +9,7 @@ transpiler writes the code.**
 - [SPEC.md](SPEC.md): the language.
 - [GLOSSARY.md](GLOSSARY.md): every term, once. `scripts/lint-docs.sh` enforces it.
 - [docs/design.md](docs/design.md): why the language looks like this.
-- [example/bacon/](example/bacon/): a complete spec for a small app.
+- [catspec-example](https://github.com/rleroi/catspec-example): TaskFlow, a complete spec for a small app, and the twenty-change experiment.
 - [skills/](skills/): `cat-init`, `cat-author`, `cat-transpile`.
 - [cli/](cli/): `catspec validate | verify | diff | transpile`.
 
@@ -82,7 +82,7 @@ change.
 
 Working draft, version 0.2. Spec-as-source is unproven at scale (see
 [SPEC.md Appendix B](SPEC.md#appendix-b-prior-art-and-position)). The next
-milestone is the honest test: take `example/` through twenty real spec
+milestone is the honest test: take [catspec-example](https://github.com/rleroi/catspec-example) through twenty real spec
 changes with no hand edits to `src/`.
 
 ## TODO
@@ -90,7 +90,7 @@ changes with no hand edits to `src/`.
 - [x] `cat-init` skill
 - [x] `cat-author` and `cat-transpile` skills (split from the previous single skill)
 - [x] `catspec validate`, `catspec diff`, `catspec transpile` with lint-rule tests and OpenSpec conformance
-- [x] Example project passes `catspec validate --strict`
+- [x] Example project passes `catspec validate --strict` (moved to [catspec-example](https://github.com/rleroi/catspec-example); its spec stays here as `cli/test/fixtures/taskflow`)
 - [x] `index.html` mirrors SPEC.md 0.2
 - [x] `docs/design.md` (rationale moved out of `index.html`)
 - [ ] `docs/workflow.md`
@@ -101,5 +101,5 @@ changes with no hand edits to `src/`.
 - [ ] Kiro CLI backend
 - [ ] Publish skills: `npx skills add cat-hq/catspec`
 - [ ] GitHub Action `cat-hq/cat-transpile@v1`
-- [ ] The twenty-change experiment on `example/`
+- [ ] The twenty-change experiment on catspec-example
 - [ ] References: `kind: code` (brownfield, read-only) and `kind: spec` (cross-repo), reserved in SPEC.md §7.1
