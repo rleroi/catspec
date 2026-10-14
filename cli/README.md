@@ -51,10 +51,23 @@ regenerate.
 ### `catspec transpile [dir]`
 
 Runs `catspec validate` first (skip with `--skip-validate`), then hands the
-`cat-transpile` skill to an agent against `dir`. Today the backend is a
-[Cursor agent](https://cursor.com/docs/sdk/typescript) and needs
-`CURSOR_API_KEY`. Exit codes: `0` success, `1` startup or config failure,
-`2` the agent run started but failed.
+`cat-transpile` skill to an agent against `dir`. The backend comes from
+`transpiler.agent` in `cat.config.yaml`, or `--agent`:
+
+| `agent` | Runs | Needs |
+|---|---|---|
+| `cursor` (default) | `@cursor/sdk` in-process | `CURSOR_API_KEY`; the optional dependency installed |
+| `cursor-cli` | `cursor-agent -p --force --trust` | `cursor-agent` on PATH, `CURSOR_API_KEY` or a login |
+| `claude-code` | `claude -p --dangerously-skip-permissions` | `claude` on PATH, a login or `ANTHROPIC_API_KEY` |
+
+`--model` overrides `transpiler.model`. The prompt is the skill file plus
+the headless contract, sent on stdin for CLI backends. Permission prompts
+are bypassed because nobody is there to answer; ownership is enforced
+afterwards by `catspec verify`. Exit codes: `0` success, `1` startup or
+config failure, `2` the agent run started but failed.
+
+Adding a backend: one file under `src/lib/agents/` implementing
+`AgentBackend`, registered in `agents/index.ts`.
 
 ## Design
 

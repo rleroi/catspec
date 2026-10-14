@@ -1,99 +1,64 @@
 import { readFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { AGENTS, DEFAULT_AGENT, findAgent, type TranspileOutcome } from "./agents/index.js";
+import { loadCatConfig } from "./config.js";
 
 const TRANSPILE_SKILL_PATH = "skills/cat-transpile/SKILL.md";
 
 export interface TranspileOptions {
+  /** Backend name. Overrides `transpiler.agent` in cat.config.yaml. */
+  readonly agent?: string;
+  /** LLM id. Overrides `transpiler.model`. */
   readonly model?: string;
   readonly apiKey?: string;
+  /** Executable override for CLI backends. */
+  readonly bin?: string;
+  readonly onText?: (chunk: string) => void;
 }
 
-export type TranspileOutcome =
-  | { readonly kind: "finished"; readonly text: string }
-  | { readonly kind: "run-error"; readonly runId: string }
-  | { readonly kind: "startup-error"; readonly message: string; readonly retryable: boolean };
+export type { TranspileOutcome };
 
 /**
  * Runs the cat-transpile skill (headless: validate, generate) against
- * `projectDir` via a local Cursor agent. Streams assistant text to stdout.
+ * `projectDir` through the configured agent backend.
  */
 export async function transpile(
   projectDir: string,
   options: TranspileOptions = {},
 ): Promise<TranspileOutcome> {
-  const apiKey = options.apiKey ?? process.env["CURSOR_API_KEY"];
-  if (!apiKey) {
+  const config = await loadCatConfig(join(projectDir, "cat.config.yaml"));
+  const transpiler = (config?.transpiler ?? {}) as Record<string, unknown>;
+  const agentName = options.agent ?? (typeof transpiler["agent"] === "string" ? transpiler["agent"] : DEFAULT_AGENT);
+  const agent = findAgent(agentName);
+  if (!agent) {
     return {
       kind: "startup-error",
-      message:
-        "CURSOR_API_KEY is not set. Export it or pass --api-key. See https://cursor.com/dashboard/integrations",
+      message: `Unknown agent \`${agentName}\`. Known: ${AGENTS.map((a) => a.name).join(", ")}. Set transpiler.agent in cat.config.yaml or pass --agent.`,
       retryable: false,
     };
   }
+  const model = options.model ?? (typeof transpiler["model"] === "string" ? transpiler["model"] : undefined);
+  const prompt = buildTranspilePrompt(await loadTranspileSkillPrompt(), projectDir);
+  return agent.run({ cwd: projectDir, prompt, model, apiKey: options.apiKey, bin: options.bin, onText: options.onText });
+}
 
-  let sdk: typeof import("@cursor/sdk");
-  try {
-    sdk = await import("@cursor/sdk");
-  } catch {
-    return {
-      kind: "startup-error",
-      message: "@cursor/sdk is not installed. Run `npm install` in the cli/ package.",
-      retryable: false,
-    };
-  }
-
-  const { Agent, CursorAgentError } = sdk;
-  const skillPrompt = await loadTranspileSkillPrompt();
-  const prompt = [
-    skillPrompt,
+export function buildTranspilePrompt(skillText: string, projectDir: string): string {
+  return [
+    skillText,
     "---",
     `Run the headless transpile above against the CaT project at ${projectDir}.`,
     "Read bacon/ and cat.config.yaml relative to that directory. Write only the",
     "output directory and the purr file, relative to that directory. Do not edit",
     "bacon/ or cat.config.yaml, and do not ask questions.",
   ].join("\n\n");
-
-  let agent: Awaited<ReturnType<typeof Agent.create>> | undefined;
-  try {
-    agent = await Agent.create({
-      apiKey,
-      model: { id: options.model ?? "composer-2.5" },
-      local: { cwd: projectDir },
-    });
-    const run = await agent.send(prompt);
-    let text = "";
-    for await (const event of run.stream()) {
-      if (event.type === "assistant") {
-        for (const block of event.message.content) {
-          if (block.type === "text") {
-            process.stdout.write(block.text);
-            text += block.text;
-          }
-        }
-      }
-    }
-    const result = await run.wait();
-    if (result.status === "error") {
-      return { kind: "run-error", runId: result.id };
-    }
-    return { kind: "finished", text };
-  } catch (err) {
-    if (err instanceof CursorAgentError) {
-      return { kind: "startup-error", message: err.message, retryable: err.isRetryable };
-    }
-    throw err;
-  } finally {
-    await agent?.[Symbol.asyncDispose]?.();
-  }
 }
 
 async function loadTranspileSkillPrompt(): Promise<string> {
   const here = dirname(fileURLToPath(import.meta.url));
   // cli/dist/lib -> repo root is two levels up from cli/, i.e. ../../../
   const repoRoot = join(here, "..", "..", "..");
-  const skillPath = join(repoRoot, TRANSPILE_SKILL_PATH);
-  return readFile(skillPath, "utf8");
+  return readFile(join(repoRoot, TRANSPILE_SKILL_PATH), "utf8");
 }
 
 export function parseStructuredBlocks(text: string): Record<string, string> {

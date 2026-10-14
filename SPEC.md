@@ -324,7 +324,8 @@ never do.
 ```yaml
 version: 0.2            # CaT language version this project targets
 transpiler:
-  model: claude-sonnet-4 # LLM id. The one place "model" means the LLM.
+  agent: claude-code     # cursor | cursor-cli | claude-code. Which agent runs cat-transpile
+  model: claude-sonnet-4 # LLM id for that agent. The one place "model" means the LLM.
   strategy: incremental  # or full
   output: src/
   retries: 2             # self-correction attempts on build failure

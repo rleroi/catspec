@@ -67,10 +67,11 @@ program
   .command("transpile")
   .description("Run validate then generate through an agent (headless, uses the cat-transpile skill).")
   .argument("[dir]", "project directory", ".")
-  .option("--model <model>", "LLM id to use", "composer-2.5")
-  .option("--api-key <key>", "Cursor API key (defaults to CURSOR_API_KEY)")
+  .option("--agent <name>", "backend: cursor | cursor-cli | claude-code (default: transpiler.agent, else cursor)")
+  .option("--model <model>", "LLM id (default: transpiler.model in cat.config.yaml)")
+  .option("--api-key <key>", "API key for the backend (CURSOR_API_KEY or ANTHROPIC_API_KEY)")
   .option("--skip-validate", "skip the local pre-flight validate step", false)
-  .action(async (dir: string, opts: { model: string; apiKey?: string; skipValidate: boolean }) => {
+  .action(async (dir: string, opts: { agent?: string; model?: string; apiKey?: string; skipValidate: boolean }) => {
     const projectDir = resolve(dir);
 
     if (!opts.skipValidate) {
@@ -84,14 +85,14 @@ program
       console.log();
     }
 
-    const outcome = await transpile(projectDir, { model: opts.model, apiKey: opts.apiKey });
+    const outcome = await transpile(projectDir, { agent: opts.agent, model: opts.model, apiKey: opts.apiKey });
     if (outcome.kind === "startup-error") {
       console.error(`\nCouldn't start the agent: ${outcome.message}`);
       process.exitCode = 1;
       return;
     }
     if (outcome.kind === "run-error") {
-      console.error(`\nRun ${outcome.runId} failed mid-flight. Inspect it in the Cursor dashboard.`);
+      console.error(`\nAgent run failed: ${outcome.runId}`);
       process.exitCode = 2;
       return;
     }

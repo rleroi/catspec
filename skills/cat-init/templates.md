@@ -9,7 +9,8 @@ Copy these into the target repo, replacing `{{PLACEHOLDERS}}`. Terms:
 version: 0.2                     # CaT language version
 
 transpiler:
-  model: "{{TRANSPILER_MODEL}}"  # LLM id; the one place "model" means the LLM
+  agent: "{{TRANSPILER_AGENT}}"  # cursor | cursor-cli | claude-code
+  model: "{{TRANSPILER_MODEL}}"  # LLM id for that agent; the one place "model" means the LLM
   strategy: incremental          # or full
   output: "src/"
   retries: 2
@@ -109,9 +110,10 @@ jobs:
   #       with: { fetch-depth: 0 }
   #     - uses: actions/setup-node@v4
   #       with: { node-version: 22 }
-  #     - run: npx -y @catspec/cli transpile .
+  #     - run: npx -y @catspec/cli transpile .   # backend from transpiler.agent
   #       env:
-  #         CURSOR_API_KEY: ${{ secrets.CURSOR_API_KEY }}
+  #         CURSOR_API_KEY: ${{ secrets.CURSOR_API_KEY }}       # agent: cursor | cursor-cli
+  #         ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }} # agent: claude-code
   #     - name: Commit transpiler-owned paths
   #       run: |
   #         git config user.name  "cat-transpile-bot"

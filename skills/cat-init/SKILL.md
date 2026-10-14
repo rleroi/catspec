@@ -31,6 +31,7 @@ When the user picks defaults:
 | auth | Supabase Auth |
 | styling | Tailwind + shadcn/ui |
 | deploy | Vercel |
+| transpiler agent | `claude-code` (or `cursor`, `cursor-cli`; whichever the user runs) |
 | transpiler model | `claude-sonnet-4` (placeholder string in config; user may change) |
 
 ## Interactive flow
@@ -86,6 +87,7 @@ Use the bodies from [templates.md](templates.md). Adjust `package` / `env` if th
 
 ### Step 5 — Transpiler preferences
 
+- `transpiler.agent`: `cursor`, `cursor-cli` or `claude-code`. Ask which agent will run `cat-transpile` in CI; default to the one running this conversation.
 - `transpiler.model`: string from user or default above.
 - `transpiler.strategy`: default `incremental`.
 - `transpiler.output`: default `src/`.
