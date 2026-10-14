@@ -1,4 +1,4 @@
-version: 0.1
+version: 0.2
 
 transpiler:
   model: claude-sonnet-4
@@ -23,3 +23,8 @@ providers:
     package: "@supabase/supabase-js"
     ssr_package: "@supabase/ssr"
     env: [NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY]
+
+references:
+  design-tokens:
+    kind: design-tokens        # W3C DTCG; the theme is generated from it
+    uri: bacon/refs/tokens.json

@@ -2,7 +2,7 @@ import { readFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const CURSOR_TRANSPILER_SKILL_PATH = "skills/cat-transpiler/SKILL.md";
+const TRANSPILE_SKILL_PATH = "skills/cat-transpile/SKILL.md";
 
 export interface TranspileOptions {
   readonly model?: string;
@@ -15,8 +15,8 @@ export type TranspileOutcome =
   | { readonly kind: "startup-error"; readonly message: string; readonly retryable: boolean };
 
 /**
- * Runs the cat-transpiler skill against `projectDir` via a local Cursor agent.
- * Streams assistant text to stdout as it arrives.
+ * Runs the cat-transpile skill (headless: validate, generate) against
+ * `projectDir` via a local Cursor agent. Streams assistant text to stdout.
  */
 export async function transpile(
   projectDir: string,
@@ -44,13 +44,14 @@ export async function transpile(
   }
 
   const { Agent, CursorAgentError } = sdk;
-  const skillPrompt = await loadTranspilerSkillPrompt();
+  const skillPrompt = await loadTranspileSkillPrompt();
   const prompt = [
     skillPrompt,
     "---",
-    `Run the four-phase workflow above against the CaT project at ${projectDir}.`,
-    "Read bacon/ and cat.config.yaml relative to that directory, and write any",
-    "generated code, spec edits, and the purr file relative to that directory too.",
+    `Run the headless transpile above against the CaT project at ${projectDir}.`,
+    "Read bacon/ and cat.config.yaml relative to that directory. Write only the",
+    "output directory and the purr file, relative to that directory. Do not edit",
+    "bacon/ or cat.config.yaml, and do not ask questions.",
   ].join("\n\n");
 
   let agent: Awaited<ReturnType<typeof Agent.create>> | undefined;
@@ -87,17 +88,17 @@ export async function transpile(
   }
 }
 
-async function loadTranspilerSkillPrompt(): Promise<string> {
+async function loadTranspileSkillPrompt(): Promise<string> {
   const here = dirname(fileURLToPath(import.meta.url));
   // cli/dist/lib -> repo root is two levels up from cli/, i.e. ../../../
   const repoRoot = join(here, "..", "..", "..");
-  const skillPath = join(repoRoot, CURSOR_TRANSPILER_SKILL_PATH);
+  const skillPath = join(repoRoot, TRANSPILE_SKILL_PATH);
   return readFile(skillPath, "utf8");
 }
 
 export function parseStructuredBlocks(text: string): Record<string, string> {
   const blocks: Record<string, string> = {};
-  const re = /```(cat-validate|cat-enrich|cat-result)\n([\s\S]*?)```/g;
+  const re = /```(cat-validate|cat-enrich|cat-generate)\n([\s\S]*?)```/g;
   let match: RegExpExecArray | null;
   while ((match = re.exec(text)) !== null) {
     const [, tag, body] = match;

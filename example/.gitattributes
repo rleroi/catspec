@@ -1,0 +1,5 @@
+# Transpiler-owned paths. Collapsed in GitHub diffs; humans do not edit them.
+src/** linguist-generated=true
+purr linguist-generated=true
+# Snapshots of references are human-owned but bulky. Collapsed in diffs.
+bacon/refs/** linguist-generated=true

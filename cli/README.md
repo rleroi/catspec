@@ -1,58 +1,55 @@
 # @catspec/cli
 
-The `cat` CLI for [CaT (Code as Text)](../index.html) projects.
+The `catspec` CLI for [CaT (Code as Text)](../README.md) projects. Terms:
+[GLOSSARY.md](../GLOSSARY.md). Language: [SPEC.md](../SPEC.md).
 
 ```bash
 npm install
 npm run build
-npm link   # optional: puts `cat` on your PATH
+npm link        # optional: puts `catspec` on your PATH
+npm test        # vitest: lint-rule fixtures + OpenSpec conformance
 ```
+
+The binary is `catspec`, not `cat`, so it never collides with `/bin/cat`.
 
 ## Commands
 
-### `cat validate [dir]`
+### `catspec validate [dir] [--strict]`
 
-Deterministic, no LLM required. Reads `bacon/*.md` and `cat.config.yaml`,
-runs every check in [`skills/cat-transpiler/SKILL.md`](../skills/cat-transpiler/SKILL.md#phase-1-validate),
-and prints a `cat-validate` block. Exits `1` if there are fatal errors.
+Deterministic, no LLM. Reads `bacon/*.md` and `cat.config.yaml`, runs every
+rule in [SPEC.md §10](../SPEC.md#10-validation), prints a `cat-validate`
+block. Exits `1` on errors. `--strict` also fails on warnings (OpenSpec
+parity; use it in CI).
 
 ```bash
-cat validate .
-cat validate path/to/project
+catspec validate .
+catspec validate path/to/project --strict
 ```
 
-### `cat diff [dir]`
+### `catspec diff [dir]`
 
 Reads `purr`, diffs `bacon/` against `last_transpiled_commit` with git, and
-expands the result through the dependency graph recorded in `purr` (e.g.
-editing a shared `models.md` also marks every feature file that depends on
-it). Prints which spec files changed, which spec files are affected once
-dependents are included, and which output files will be regenerated.
+expands the result through the Model dependency graph recorded in `purr`
+(editing a shared `models.md` also marks every feature file that references
+it). Prints changed spec files, affected spec files, and outputs to
+regenerate.
 
-```bash
-cat diff .
-```
+### `catspec transpile [dir]`
 
-### `cat transpile [dir]`
-
-Runs `cat validate` first (skip with `--skip-validate`), then hands the
-`cat-transpiler` skill to a local [Cursor agent](https://cursor.com/docs/sdk/typescript)
-against `dir`, streaming its output. Requires `CURSOR_API_KEY`.
-
-```bash
-export CURSOR_API_KEY=cursor_...
-cat transpile . --model composer-2.5
-```
-
-Exit codes: `0` success, `1` startup/config failure (fix and retry), `2` the
-agent run started but failed mid-flight (inspect it in the Cursor dashboard).
+Runs `catspec validate` first (skip with `--skip-validate`), then hands the
+`cat-transpile` skill to an agent against `dir`. Today the backend is a
+[Cursor agent](https://cursor.com/docs/sdk/typescript) and needs
+`CURSOR_API_KEY`. Exit codes: `0` success, `1` startup or config failure,
+`2` the agent run started but failed.
 
 ## Design
 
-- `validate` and `diff` are pure, offline, and fast — safe to run in CI on
-  every PR.
+- `validate` and `diff` are pure, offline and fast. Safe on every PR.
 - `transpile` is the only command that calls an LLM. It always validates
-  first; the spec is the source of truth and the CLI refuses to generate code
-  from a spec with fatal errors.
-- All three commands operate on plain files (`bacon/*.md`, `cat.config.yaml`,
-  `purr`) — no daemon, no hidden state.
+  first: the CLI refuses to generate from a spec with errors.
+- Everything operates on plain files: `bacon/*.md`, `cat.config.yaml`,
+  `purr`. No daemon, no hidden state.
+- The parser in `src/lib/spec.ts` is CaT's own. The OpenSpec conformance
+  test (`test/openspec-conformance.test.ts`) projects the example's
+  `## Purpose` and `## Requirements` sections and runs the real
+  `openspec validate` on them, so the grammar cannot drift from OpenSpec.

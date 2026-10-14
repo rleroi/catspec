@@ -1,3 +1,5 @@
+## Purpose
+
 Models referenced by more than one feature.
 
 ## Model: Team

@@ -4,11 +4,13 @@ import type { ValidateResult } from "./validate.js";
 export function formatValidateBlock(result: ValidateResult): string {
   const body = {
     status: result.status,
+    strict: result.strict,
     commit: result.commit,
     last_transpiled_commit: result.lastTranspiledCommit,
     files_scanned: result.filesScanned,
     models: result.models,
     features: result.features,
+    requirements: result.requirements,
     errors: result.errors.map((e) => ({
       file: e.file,
       line: e.line,

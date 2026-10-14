@@ -9,23 +9,24 @@ import { transpile } from "./lib/transpile.js";
 const program = new Command();
 
 program
-  .name("cat")
-  .description("CLI for the CaT (Code as Text) spec.")
-  .version("0.1.0");
+  .name("catspec")
+  .description("CLI for CaT (Code as Text) projects: validate, diff and transpile bacon/ specs.")
+  .version("0.2.0");
 
 program
   .command("validate")
   .description("Validate bacon/ spec files and cat.config.yaml, emit a cat-validate block.")
   .argument("[dir]", "project directory", ".")
-  .action(async (dir: string) => {
-    const result = await validate(resolve(dir));
+  .option("--strict", "treat warnings as failures", false)
+  .action(async (dir: string, opts: { strict: boolean }) => {
+    const result = await validate(resolve(dir), { strict: opts.strict });
     printValidateSummary(result);
     if (result.status === "fail") process.exitCode = 1;
   });
 
 program
   .command("diff")
-  .description("Show which bacon/ spec files changed since the last transpile.")
+  .description("Show which bacon/ spec files changed since the last transpile recorded in purr.")
   .argument("[dir]", "project directory", ".")
   .action(async (dir: string) => {
     const result = await diff(resolve(dir));
@@ -50,9 +51,9 @@ program
 
 program
   .command("transpile")
-  .description("Run the validate -> enrich -> confirm -> transpile loop via a Cursor agent.")
+  .description("Run validate then generate through an agent (headless, uses the cat-transpile skill).")
   .argument("[dir]", "project directory", ".")
-  .option("--model <model>", "model id to use", "composer-2.5")
+  .option("--model <model>", "LLM id to use", "composer-2.5")
   .option("--api-key <key>", "Cursor API key (defaults to CURSOR_API_KEY)")
   .option("--skip-validate", "skip the local pre-flight validate step", false)
   .action(async (dir: string, opts: { model: string; apiKey?: string; skipValidate: boolean }) => {

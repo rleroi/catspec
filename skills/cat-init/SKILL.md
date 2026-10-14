@@ -11,7 +11,7 @@ description: >-
 
 # CaT Init (`cat-init`)
 
-You scaffold **new** CaT projects so humans can author `bacon/*.md` and run the transpiler skill later. **Spec is source of truth**; `src/` is generated (often gitignored).
+You scaffold **new** CaT projects so humans can author `bacon/*.md` with `cat-author` and generate code with `cat-transpile` later. **The spec is the source of truth.** `bacon/` and `cat.config.yaml` are human-owned; `src/` and `purr` are transpiler-owned and committed. Terms: [GLOSSARY.md](../../GLOSSARY.md).
 
 ## Before you start
 
@@ -98,17 +98,19 @@ Summarize paths to be created/modified. After user confirms, write files.
 
 | Path | Purpose |
 |------|---------|
-| `cat.config.yaml` | Transpiler version, model, strategy, output, retries, and one `providers.<key>` entry per selected provider |
-| `bacon/system.md` | Required `name:` + `stack:` frontmatter + description (see [index.html](../../index.html) in repo root) |
-| `.github/workflows/transpile.yml` | CI on `bacon/**` and `cat.config.yaml`; scaffold check until CLI exists |
+| `cat.config.yaml` | `version`, `transpiler` (model, strategy, output, retries), one provider profile under `providers.<key>` per selected provider, `references` only if the user has something to bind |
+| `bacon/system.md` | Required `name:` + `stack:` frontmatter, `## Purpose`, optional `## Requirements` (see [SPEC.md](../../SPEC.md)) |
+| `.github/workflows/transpile.yml` | CI on `bacon/**` and `cat.config.yaml`: `catspec validate --strict`, transpile job commented until secrets exist |
+| `.gitattributes` | marks `src/**` and `purr` as generated |
+| `CODEOWNERS` | GitHub only; bot identity owns `src/` and `purr` |
 
 **Optional**
 
 - `bacon/features/.gitkeep` — only create if you also create `bacon/features/`; keeps the directory in git until the first feature file is added.
 
-## Provider entry rules
+## Provider profile rules
 
-Every generated `providers.<key>` entry **must** include:
+Every generated provider profile (`providers.<key>`) **must** include:
 
 - `name` — exact string used in `using:` in spec files (e.g. `Supabase Auth`)
 - `category` — short slug (`authentication`, `database`, `payments`, `email`, …)
@@ -118,36 +120,39 @@ Every generated `providers.<key>` entry **must** include:
 
 Optional: `session`, `storage`, or other key-value hints for idiomatic usage. Include when it helps the transpiler make better decisions; omit when there's nothing meaningful to say.
 
-**Clerk + Supabase:** If both selected, add both entries; `system.md`'s `stack:` should list Clerk for auth and Supabase for database. Do not duplicate the Supabase Auth entry if using Clerk only.
+**Clerk + Supabase:** If both selected, add both profiles; `system.md`'s `stack:` should list Clerk for auth and Supabase for database. Do not duplicate the Supabase Auth profile if using Clerk only.
 
-**No provider selected for a layer:** Omit that entry; `system.md` should still declare the stack truthfully (LLM may warn per cat-transpiler).
+**No provider selected for a layer:** Omit that profile; `system.md` should still declare the stack truthfully (`catspec validate` warns with `W_NO_PROVIDER_PROFILE`).
 
-## `.gitignore`
+## `.gitignore`, `.gitattributes`, `CODEOWNERS`
 
-Append the **CaT block** from [templates.md](templates.md). Merge with existing `.gitignore`: do not duplicate lines; preserve user rules.
+Append the **CaT block** from [templates.md](templates.md) to `.gitignore`. Merge with an existing file: do not duplicate lines; preserve user rules. Never add `src/` or `purr` to `.gitignore`; both are committed.
+
+Create `.gitattributes` from the template (merge if one exists). Create `CODEOWNERS` only for GitHub repos.
 
 ## After writes
 
 1. Show a short tree of created/changed files.
-2. Remind: commit `bacon/` and `cat.config.yaml`; `src/` and `purr` are usually ignored until first transpile.
+2. Remind: commit `bacon/`, `cat.config.yaml`, the workflow and attribute files. `src/` and `purr` appear after the first transpile and are committed by it.
 
 ## Verification checklist (required)
 
 Before finishing, confirm:
 
-- [ ] `bacon/system.md` exists and has `name:` and `stack:` in its frontmatter
-- [ ] `cat.config.yaml` exists with `version`, `transpiler` (model, strategy, output, retries), and one `providers.<key>` entry per selected provider
-- [ ] `.github/workflows/transpile.yml` exists and triggers on `bacon/**` (and `cat.config.yaml` per template)
-- [ ] Every enabled provider has a `providers.<key>` entry in `cat.config.yaml` and its `name` matches what you'll document for `using:`
-- [ ] `.gitignore` includes ignores for `src/`, `.env*`, `purr`, and common Node/Next artifacts from the template block (merged, not duplicated)
+- [ ] `bacon/system.md` exists with `name:` and `stack:` in its frontmatter and a `## Purpose` section
+- [ ] `cat.config.yaml` exists with `version: 0.2`, `transpiler` (model, strategy, output, retries), and one provider profile per selected provider
+- [ ] `.github/workflows/transpile.yml` exists, triggers on `bacon/**` and `cat.config.yaml`, runs `catspec validate --strict`
+- [ ] `.gitattributes` marks `src/**` and `purr` as generated
+- [ ] Every enabled provider has a profile whose `name` matches what you'll document for `using:`
+- [ ] `.gitignore` has the template block merged, and does **not** ignore `src/` or `purr`
+- [ ] `catspec validate .` passes (run it if the CLI is available: `npx -y @catspec/cli validate .`)
 
 ## Handoff — next steps for the user
 
 Tell the user to:
 
-1. Add feature specs under `bacon/` (e.g. `auth.md`, `models.md`, `features/*.md`).
-2. Run the **cat-transpiler** skill: validate → enrich → confirm → transpile (see [skills/cat-transpiler/SKILL.md](../cat-transpiler/SKILL.md)).
-3. When the `cat` CLI exists, extend `.github/workflows/transpile.yml` with `cat validate` / `cat transpile` and PR creation.
+1. Run the **cat-author** skill to write feature specs under `bacon/` (see [skills/cat-author/SKILL.md](../cat-author/SKILL.md)). It validates, enriches, confirms, and ends with a commit.
+2. Push. CI runs `catspec validate`. Once the transpile job is enabled, **cat-transpile** regenerates `src/` and commits it (see [skills/cat-transpile/SKILL.md](../cat-transpile/SKILL.md)). Locally: `catspec transpile .`.
 
 ## Structured completion (optional)
 

@@ -1,18 +1,102 @@
 # CaT — Code as Text
 
-Human-readable specs in, working code out. The spec file is the source of truth; the LLM is the compiler.
+Human-readable spec in, working code out. The spec is the source of truth;
+the transpiler writes the code.
+
+**CaT is OpenSpec's spec format plus a system layer, for projects where the
+transpiler writes the code.**
+
+- [SPEC.md](SPEC.md): the language.
+- [GLOSSARY.md](GLOSSARY.md): every term, once.
+- [example/bacon/](example/bacon/): a complete spec for a small app.
+- [skills/](skills/): `cat-init`, `cat-author`, `cat-transpile`.
+- [cli/](cli/): `catspec validate | diff | transpile`.
+
+## Three tiers, nothing new where something existed
+
+| Tier | What | From |
+|---|---|---|
+| Used unchanged | CommonMark + GFM tables, YAML frontmatter, BCP 14 (RFC 2119/8174), and OpenSpec's `## Purpose` / `## Requirements` / `### Requirement:` / `#### Scenario:` grammar | the standards |
+| Guidance | EARS sentence templates for requirement bodies | EARS |
+| CaT's own | `stack:`, `feature:`, `using:`, `references:` frontmatter; `## Model:`, `## Flow:`, `## View:` sections; verbatim blocks; the `purr` transpile record | SPEC.md |
+
+A CaT feature file with the CaT-only parts removed is a valid OpenSpec
+spec. The CLI test suite proves it against the real `openspec validate`.
+
+## A feature file
+
+```markdown
+---
+feature: Authentication
+using: [Supabase Auth]
+---
+
+## Purpose
+Users sign up with email or Google. A Profile is created on first login.
+
+## Model: Profile
+| Field | Type | Notes |
+|---|---|---|
+| id | uuid | primary key |
+| display_name | text | |
+
+## Requirements
+
+### Requirement: Password length
+Passwords MUST be at least 10 characters.
+
+#### Scenario: Too short
+- **WHEN** a visitor submits a 9-character password
+- **THEN** sign-up is rejected
+
+### Requirement: Account lockout
+IF sign-in fails three times within 10 minutes, THEN the system MUST lock
+the account for 15 minutes.
+
+#### Scenario: Third failure locks
+- **GIVEN** an account with 2 failed attempts in the last 10 minutes
+- **WHEN** a third attempt fails
+- **THEN** the account is locked for 15 minutes
+
+## Flow: Sign Up
+1. User enters email and password, or clicks "Sign in with Google"
+2. System creates the auth account
+3. On first login, system creates a Profile
+```
+
+## How a change flows
+
+```
+human + cat-author  →  edit bacon/  →  catspec validate  →  commit + push
+                                                                 │
+CI: catspec validate --strict  →  cat-transpile  →  src/ + purr  →  commit by bot
+```
+
+`bacon/` and `cat.config.yaml` are human-owned. `src/` and `purr` are
+transpiler-owned and committed, so incremental runs have a baseline and
+reviewers see what changed. Humans do not edit `src/`; a fix is a spec
+change.
+
+## Status
+
+Working draft, version 0.2. Spec-as-source is unproven at scale (see
+[SPEC.md Appendix B](SPEC.md#appendix-b-prior-art-and-position)). The next
+milestone is the honest test: take `example/` through twenty real spec
+changes with no hand edits to `src/`.
 
 ## TODO
 
-- [x] Create a `cat-init` skill — scaffold a new project interactively (ask stack preferences, set up `cat.config.yaml`, `bacon/system.md`, GitHub Actions workflow, `.gitignore`, provider entries). Implemented: [skills/cat-init/SKILL.md](skills/cat-init/SKILL.md) and [skills/cat-init/templates.md](skills/cat-init/templates.md).
-- [x] Get the POC working end-to-end (validate → enrich → confirm → transpile loop on a real project) — ran on `example/`, found and fixed a spec/code drift (undocumented `Notification` model) and a real build error (implicit-`any` cookie params), `npm run build` passes
-- [ ] Update this README to a real one (installation, usage, examples, how it works)
-- [ ] Write provider entries for common stacks (Supabase, Stripe, Resend, Clerk, etc.)
-- [x] Build the CaT CLI (`cat validate`, `cat diff`, `cat transpile`) — see [cli/](cli/), `validate`/`diff` are deterministic and tested against fixtures + `example/`; `transpile` shells out to a Cursor agent via `@cursor/sdk`
-- [ ] Publish both skills (`cat-init` + `cat-transpiler`) so users can install to Cursor, Claude Code, and 40+ agents in one command: `npx skills add cat-hq/catspec`
-- [ ] GitHub Action workflow template that triggers on `bacon/` changes and opens a PR with generated `src/`
-- [ ] Publish the GitHub Action to the Marketplace so users can add it to any repo with the standard `uses: cat-hq/cat-transpile@v1` syntax (requires separate repo)
-- [x] Incremental transpilation — `cat diff` implements the `git diff` + purr file dependency graph, tested against fixtures with cascading shared-model changes
-- [ ] Formal spec parser / linter (optional for v0.1 — `cli/src/lib/spec.ts` is a lightweight regex-based parser for the CLI's own checks, not a full AST/editor-support parser)
-
-
+- [x] `cat-init` skill
+- [x] `cat-author` and `cat-transpile` skills (split from the previous single skill)
+- [x] `catspec validate`, `catspec diff`, `catspec transpile` with lint-rule tests and OpenSpec conformance
+- [x] Example project passes `catspec validate --strict`
+- [ ] Rewrite `index.html` to mirror SPEC.md 0.2 (spectrum rename, OpenSpec grammar, TaskFlow example)
+- [ ] `docs/workflow.md` and `docs/design.md` (rationale moved out of `index.html`)
+- [ ] `llms.txt`
+- [ ] `scripts/lint-docs.sh`: grep for banned terms from GLOSSARY.md
+- [ ] `catspec verify`: fail when a human commit touched `src/`
+- [ ] `transpiler.agent` backend switch (Cursor, Claude Code, Kiro CLI)
+- [ ] Publish skills: `npx skills add cat-hq/catspec`
+- [ ] GitHub Action `cat-hq/cat-transpile@v1`
+- [ ] The twenty-change experiment on `example/`
+- [ ] References: `kind: code` (brownfield, read-only) and `kind: spec` (cross-repo), reserved in SPEC.md §7.1

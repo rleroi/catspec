@@ -1,25 +1,38 @@
 # cat-init — file templates
 
-Copy these into the target repo, replacing `{{PLACEHOLDERS}}`.
+Copy these into the target repo, replacing `{{PLACEHOLDERS}}`. Terms:
+[GLOSSARY.md](../../GLOSSARY.md). Language: [SPEC.md](../../SPEC.md).
 
 ## `cat.config.yaml`
 
 ```yaml
-version: 0.1
+version: 0.2                     # CaT language version
 
 transpiler:
-  model: "{{TRANSPILER_MODEL}}"
-  strategy: incremental
+  model: "{{TRANSPILER_MODEL}}"  # LLM id; the one place "model" means the LLM
+  strategy: incremental          # or full
   output: "src/"
   retries: 2
 
 providers:
   {{PROVIDER_KEY}}:
+    name: "{{PROVIDER_NAME}}"    # matched by `using:` in spec files
     package: "{{PROVIDER_PACKAGE}}"
 ```
 
-One `providers.<key>` entry per selected provider — see individual provider
-bodies below, which are all merged into this one file's `providers:` map.
+One provider profile per selected provider under `providers:`. Bodies below.
+
+Add a `references:` map only when the user already has a design, token
+file, API description or document to bind. Shape, see SPEC.md §7.1:
+
+```yaml
+references:
+  {{REFERENCE_KEY}}:
+    kind: design               # design | design-tokens | api | schema | doc
+    uri: "{{REFERENCE_URI}}"   # local path or URL
+    via: mcp:figma             # remote only: MCP server cat-author reads it through
+    snapshot: bacon/refs/{{REFERENCE_KEY}}/   # remote only: committed copy cat-transpile reads
+```
 
 ## `bacon/system.md`
 
@@ -35,8 +48,22 @@ stack:
   deploy:     {{STACK_DEPLOY}}
 ---
 
+## Purpose
+
 {{SYSTEM_DESCRIPTION}}
+
+## Requirements
+
+### Requirement: {{FIRST_SYSTEM_RULE_NAME}}
+{{FIRST_SYSTEM_RULE_BODY}}
+
+#### Scenario: {{FIRST_SYSTEM_RULE_SCENARIO}}
+- **WHEN** {{TRIGGER}}
+- **THEN** {{OUTCOME}}
 ```
+
+If the user has no system-wide rule yet, omit `## Requirements` entirely
+rather than leaving placeholders.
 
 ## `.github/workflows/transpile.yml`
 
@@ -45,7 +72,6 @@ name: CaT transpile
 
 on:
   push:
-    branches: [main, master]
     paths:
       - "bacon/**"
       - "cat.config.yaml"
@@ -54,36 +80,73 @@ on:
       - "bacon/**"
       - "cat.config.yaml"
 
+concurrency:
+  group: cat-transpile-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  cat-scaffold-check:
+  validate:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0            # catspec diff needs history back to purr's commit
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npx -y @catspec/cli validate . --strict
 
-      - name: Require CaT layout
-        run: |
-          test -f bacon/system.md
-          test -f cat.config.yaml
-          grep -q "^name:" bacon/system.md
-          grep -q "^stack:" bacon/system.md
-          echo "CaT scaffold OK"
-
-      # When `cat` CLI is available, replace with:
-      # - run: cat validate
-      # - run: cat transpile
-      # - uses: peter-evans/create-pull-request@v6
+  # Enable once an agent backend and its API key are configured as repo secrets.
+  # Runs only on push (never on PR from a fork), and never when the pusher is the bot.
+  # transpile:
+  #   needs: validate
+  #   if: github.event_name == 'push' && github.actor != 'cat-transpile-bot'
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #       with: { fetch-depth: 0 }
+  #     - uses: actions/setup-node@v4
+  #       with: { node-version: 22 }
+  #     - run: npx -y @catspec/cli transpile .
+  #       env:
+  #         CURSOR_API_KEY: ${{ secrets.CURSOR_API_KEY }}
+  #     - name: Commit transpiler-owned paths
+  #       run: |
+  #         git config user.name  "cat-transpile-bot"
+  #         git config user.email "cat-transpile-bot@users.noreply.github.com"
+  #         git add src/ purr package.json package-lock.json .env.example
+  #         git diff --cached --quiet || git commit -m "transpile: $(git rev-parse --short HEAD)"
+  #         git push
 ```
+
+## `.gitattributes`
+
+```gitattributes
+# Transpiler-owned paths. Collapsed in GitHub diffs; humans do not edit them.
+src/** linguist-generated=true
+purr linguist-generated=true
+# Snapshots of references are human-owned but bulky. Collapse them in diffs.
+bacon/refs/** linguist-generated=true
+```
+
+## `CODEOWNERS`
+
+```
+# Transpiler-owned paths. Review by the bot identity so human edits to src/ stand out.
+/src/   @cat-transpile-bot
+/purr   @cat-transpile-bot
+```
+
+Replace `@cat-transpile-bot` with the GitHub identity the workflow commits
+as. Skip this file if the repo is not on GitHub.
 
 ## `.gitignore` — append block
 
 ```gitignore
-# CaT — generated / local (keep bacon/ and cat.config.yaml committed except secrets)
-src/*
-!src/.gitkeep
+# CaT. bacon/, cat.config.yaml, src/ and purr are all committed.
 .env
 .env.local
 .env.*.local
-purr
 node_modules/
 .next/
 out/
@@ -92,11 +155,13 @@ build/
 *.log
 ```
 
-If you want an empty `src/` tracked before first transpile, create `src/.gitkeep` — the negation above will preserve it. Otherwise omit `src/.gitkeep` entirely and `src/` will be fully ignored until generated.
+`src/` and `purr` are committed on purpose: incremental transpile needs the
+previous output as a baseline, and the purr diff is the review record.
 
-## Provider entries (merge into `cat.config.yaml`'s `providers:` map)
+## Provider profiles (merge into `providers:` in `cat.config.yaml`)
 
-Each provider is a key under `providers:` in `cat.config.yaml`, not a separate file.
+Each provider profile is a key under `providers:`, not a separate file.
+`name` is what `using:` matches.
 
 ### `supabase`
 

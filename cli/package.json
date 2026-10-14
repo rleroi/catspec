@@ -1,11 +1,11 @@
 {
   "name": "@catspec/cli",
-  "version": "0.1.0",
-  "description": "CLI for the CaT (Code as Text) spec — validate, diff, and transpile bacon/ specs.",
+  "version": "0.2.0",
+  "description": "CLI for CaT (Code as Text) projects: validate, diff and transpile bacon/ specs.",
   "type": "module",
   "license": "MIT",
   "bin": {
-    "cat": "./dist/cli.js"
+    "catspec": "./dist/cli.js"
   },
   "files": [
     "dist"
@@ -13,6 +13,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "dev": "tsx src/cli.ts",
+    "test": "vitest run",
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
@@ -27,6 +28,7 @@
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^22.10.2",
     "tsx": "^4.19.2",
-    "typescript": "^5.7.2"
+    "typescript": "^5.7.2",
+    "vitest": "^3.2.7"
   }
 }
