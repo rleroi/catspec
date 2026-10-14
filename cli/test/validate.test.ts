@@ -316,3 +316,14 @@ describe("references (SPEC.md §7.1)", () => {
     expect(r.errors).toHaveLength(0);
   });
 });
+
+describe("purr decisions", () => {
+  it("W_DECISIONS_OPEN: purr with unresolved decisions", async () => {
+    const r = await validateProject({
+      purr: `last_transpiled_commit: abc\ndecisions:\n  - spec: bacon/system.md\n    requirement: X\n    kind: ambiguity\n    reason: r\n`,
+    });
+    expect(count(r, "W_DECISIONS_OPEN")).toBe(1);
+    const clean = await validateProject({ purr: `last_transpiled_commit: abc\ndecisions: []\n` });
+    expect(count(clean, "W_DECISIONS_OPEN")).toBe(0);
+  });
+});

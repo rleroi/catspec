@@ -17,7 +17,8 @@ The binary is `catspec`, not `cat`, so it never collides with `/bin/cat`.
 ### `catspec validate [dir] [--strict]`
 
 Deterministic, no LLM. Reads `bacon/*.md` and `cat.config.yaml`, runs every
-rule in [SPEC.md §10](../SPEC.md#10-validation), prints a `cat-validate`
+rule in [SPEC.md §10](../SPEC.md#10-validation), reads `purr` for open
+decisions, prints a `cat-validate`
 block. Exits `1` on errors. `--strict` also fails on warnings (OpenSpec
 parity; use it in CI).
 

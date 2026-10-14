@@ -334,6 +334,15 @@ export async function validate(projectDir: string, options: ValidateOptions = {}
 
   const commit = await getHeadCommit(projectDir);
   const purr = await loadPurr(purrPath);
+  const decisions = Array.isArray(purr?.["decisions"]) ? (purr!["decisions"] as unknown[]) : [];
+  if (decisions.length > 0) {
+    warn(
+      "purr",
+      1,
+      "W_DECISIONS_OPEN",
+      `purr has ${decisions.length} open decision(s) — resolve them into the spec with cat-author`,
+    );
+  }
   const failed = errors.length > 0 || (strict && warnings.length > 0);
 
   return {

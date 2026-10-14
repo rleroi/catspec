@@ -133,6 +133,15 @@ decisions:
 Decisions are also summarised in the `cat-generate` block so a PR reviewer
 sees them without opening `purr`.
 
+`decisions` is current state, not a log:
+
+- One entry per `(spec, requirement, kind)`. Overwrite, never append.
+- Incremental run: rewrite the decisions of the spec files you regenerated,
+  carry the rest over unchanged. Full run: rewrite all.
+- Drop any decision whose spec file or requirement no longer exists.
+- If the spec now answers a question you previously decided, do not record
+  it again. The entry disappears; that is the intended path.
+
 ## Post-generation
 
 1. Build. Self-correct up to `transpiler.retries` times.

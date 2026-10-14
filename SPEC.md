@@ -380,6 +380,7 @@ warning into a failure.
 | `E_REFERENCE_KIND` | error | reference without `kind`, `uri`, or with an unknown `kind` |
 | `W_REFERENCE_MISSING` | warning | local `uri` or `snapshot` path not found |
 | `W_REFERENCE_NO_SNAPSHOT` | warning | remote `uri` without a `snapshot`; transpile cannot read it |
+| `W_DECISIONS_OPEN` | warning | `purr.decisions` is not empty; resolve them into the spec with `cat-author` |
 | `W_CROSS_FEATURE_MODEL` | warning | Model in a feature file referenced from another file |
 
 ---
@@ -447,6 +448,28 @@ bacon/auth.md:
     - src/app/(auth)/login/page.tsx
     - src/lib/auth.ts
 ```
+
+#### Decision lifecycle
+
+`decisions` is current state, not a log. History is git, because `purr` is
+committed. Every decision is a hole in the spec, and the spec is where it
+gets filled.
+
+1. One entry per `(spec, requirement, kind)`. A repeated decision overwrites,
+   never appends.
+2. An incremental run rewrites the decisions of the spec files it regenerated
+   and carries the others over. A full run rewrites all.
+3. A decision whose spec file or requirement no longer exists is dropped.
+4. `cat-author` reads `decisions` during validate and resolves each one by
+   making the spec explicit: an `ambiguity` becomes a requirement or
+   scenario; a `should_deviation` becomes a changed requirement, or the
+   SHOULD is reworded so the deviation is the default; a `may_skipped`
+   becomes a MUST or is removed. The next transpile then finds no room to
+   decide, and the entry disappears.
+
+So the list is bounded by the number of open SHOULDs, MAYs and ambiguities
+in the spec, and shrinks as the spec gets precise. `catspec validate` warns
+with `W_DECISIONS_OPEN` while any remain.
 
 An incremental run diffs `bacon/` against `last_transpiled_commit`, expands
 the changed files through `dependencies` and `references`, and regenerates

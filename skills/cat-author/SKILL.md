@@ -36,6 +36,20 @@ Print the `cat-validate` block. If there is no `bacon/system.md` or
 Fix errors with the user before anything else. Treat warnings as the enrich
 agenda.
 
+If `purr.decisions` is not empty (`W_DECISIONS_OPEN`), those come first in
+enrich. Each decision is a hole the transpiler had to fill on its own. Show
+the human the decision and its reason, then make the spec explicit:
+
+| kind | Resolve by |
+|---|---|
+| `ambiguity` | Write the answer as a named requirement with a scenario, or as a Model field or Flow step. |
+| `should_deviation` | Either change the requirement so the deviation is the stated behaviour, or keep the SHOULD and add the constraint that made it a MUST in practice. |
+| `may_skipped` | Make it a MUST with a scenario, or delete the MAY. |
+
+The human may also accept a decision as-is. Then rewrite the requirement so
+it says what the code does; the decision still disappears. Never copy
+`purr.decisions` into the spec verbatim.
+
 ## Phase 2: Enrich
 
 Enrich means: ask what is unclear, then **write the answers into the spec
@@ -116,7 +130,8 @@ Change types: `purpose_added`, `requirement_added`, `requirement_promoted`,
 `requirement_rewritten`, `scenario_added`, `model_added`, `model_moved`,
 `field_added`, `invariant_added`, `flow_added`, `view_added`,
 `using_added`, `provider_profile_added`, `reference_added`,
-`reference_bound`, `snapshot_updated`, `description_updated`.
+`reference_bound`, `snapshot_updated`, `decision_resolved`,
+`description_updated`.
 
 Then run `catspec validate` again. Loop until there are no errors and the
 remaining warnings are ones the user accepts.
