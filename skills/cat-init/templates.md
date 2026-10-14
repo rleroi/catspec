@@ -13,6 +13,7 @@ transpiler:
   strategy: incremental          # or full
   output: "src/"
   retries: 2
+  bot: cat-transpile-bot         # git author of transpile commits; `catspec verify` checks it
 
 providers:
   {{PROVIDER_KEY}}:
@@ -95,6 +96,7 @@ jobs:
         with:
           node-version: 22
       - run: npx -y @catspec/cli validate . --strict
+      - run: npx -y @catspec/cli verify .     # ownership: humans never touch src/ or purr
 
   # Enable once an agent backend and its API key are configured as repo secrets.
   # Runs only on push (never on PR from a fork), and never when the pusher is the bot.

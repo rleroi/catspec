@@ -1123,9 +1123,9 @@ catspec transpile .</code></pre>
   <ul class="status-list">
     <li><span class="status-dot done"></span> <strong>Language 0.2</strong> &mdash; OpenSpec grammar, glossary, references</li>
     <li><span class="status-dot done"></span> <strong>Skills</strong> &mdash; <code>cat-init</code>, <code>cat-author</code>, <code>cat-transpile</code></li>
-    <li><span class="status-dot done"></span> <strong>CLI</strong> &mdash; <code>catspec validate | diff | transpile</code>, lint-rule tests, OpenSpec conformance test</li>
+    <li><span class="status-dot done"></span> <strong>CLI</strong> &mdash; <code>catspec validate | verify | diff | transpile</code>, lint-rule tests, OpenSpec conformance test</li>
     <li><span class="status-dot done"></span> <strong>Example</strong> &mdash; TaskFlow passes <code>validate --strict</code></li>
-    <li><span class="status-dot next"></span> <strong><code>catspec verify</code></strong> &mdash; fail when a human commit touched <code>src/</code></li>
+    <li><span class="status-dot done"></span> <strong><code>catspec verify</code></strong> &mdash; fails when a human commit touched <code>src/</code> or <code>purr</code></li>
     <li><span class="status-dot next"></span> <strong>Agent backends</strong> &mdash; <code>transpiler.agent</code>: Cursor, Claude Code, Kiro CLI</li>
     <li><span class="status-dot next"></span> <strong>The twenty-change experiment</strong> &mdash; twenty real spec changes on <code>example/</code>, no hand edits to <code>src/</code>. The kill criterion.</li>
     <li><span class="status-dot later"></span> <strong>GitHub Action</strong> &mdash; <code>cat-hq/cat-transpile@v1</code></li>
