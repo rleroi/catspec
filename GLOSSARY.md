@@ -75,7 +75,7 @@ When a term in the table has a banned synonym, use only the canonical form.
 - Do not state counts of constructs in prose ("the four frontmatter fields"). Counts drift. Use a table.
 - `transpiler.model` in `cat.config.yaml` is the one place where "model" means the LLM. It follows SDK convention and is the documented exception.
 - Skill names are verbs: `cat-init`, `cat-author`, `cat-transpile`. Structured output blocks are named after phases: `cat-validate`, `cat-enrich`, `cat-generate`.
-- CLI commands are verbs: `catspec validate`, `catspec diff`, `catspec transpile`.
+- CLI commands are verbs: `catspec validate`, `catspec verify`, `catspec diff`, `catspec transpile`. A command that is not a phase emits a block named after itself: `cat-verify`.
 - Lint codes: `E_` for errors, `W_` for warnings, then `REQ`, `SCENARIO`, `MODEL`, `FLOW`, `FEATURE`, `PROVIDER`, `REFERENCE`, `FIELD` as the subject, then the condition. `E_REQ_NO_BODY`, `W_SCENARIO_NO_THEN`.
 - Authoring reads remote sources through MCP; transpiling reads only committed files. "MCP at author time, files at transpile time."
 

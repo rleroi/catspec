@@ -328,6 +328,7 @@ transpiler:
   strategy: incremental  # or full
   output: src/
   retries: 2             # self-correction attempts on build failure
+  bot: cat-transpile-bot # git author of transpile commits; `catspec verify` uses it
 providers:
   supabase-auth:
     name: Supabase Auth  # matched by `using:`
@@ -401,6 +402,12 @@ validate until clean, and ends with a commit of human-owned paths.
 MUST NOT ask questions and MUST NOT modify human-owned paths. When the spec
 leaves room, it decides, records the decision in `purr`, and moves on. When
 the spec is contradictory, it fails with the offending requirement names.
+
+Ownership is checked by `catspec verify`. It walks the commits after
+`purr.last_transpiled_commit` (or `--base <ref>`) and fails when a commit
+not authored by `transpiler.bot` touches the output directory or `purr`, or
+a commit authored by the bot touches `bacon/` or `cat.config.yaml`. CI
+SHOULD run it on every push.
 
 Generate rules:
 

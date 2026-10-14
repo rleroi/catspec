@@ -11,7 +11,7 @@ transpiler writes the code.**
 - [docs/design.md](docs/design.md): why the language looks like this.
 - [example/bacon/](example/bacon/): a complete spec for a small app.
 - [skills/](skills/): `cat-init`, `cat-author`, `cat-transpile`.
-- [cli/](cli/): `catspec validate | diff | transpile`.
+- [cli/](cli/): `catspec validate | verify | diff | transpile`.
 
 ## Three tiers, nothing new where something existed
 
@@ -96,7 +96,7 @@ changes with no hand edits to `src/`.
 - [ ] `docs/workflow.md`
 - [ ] `llms.txt`
 - [x] `scripts/lint-docs.sh`: grep for banned terms from GLOSSARY.md, runs in `npm test`
-- [ ] `catspec verify`: fail when a human commit touched `src/`
+- [x] `catspec verify`: fail when a human commit touched `src/` or `purr`, or the bot touched `bacon/`
 - [ ] `transpiler.agent` backend switch (Cursor, Claude Code, Kiro CLI)
 - [ ] Publish skills: `npx skills add cat-hq/catspec`
 - [ ] GitHub Action `cat-hq/cat-transpile@v1`

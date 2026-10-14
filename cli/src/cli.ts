@@ -2,9 +2,10 @@
 import { Command } from "commander";
 import { resolve } from "node:path";
 import { validate } from "./lib/validate.js";
-import { printValidateSummary } from "./lib/format.js";
+import { printValidateSummary, printVerifySummary } from "./lib/format.js";
 import { diff } from "./lib/diff.js";
 import { transpile } from "./lib/transpile.js";
+import { verify } from "./lib/verify.js";
 
 const program = new Command();
 
@@ -21,6 +22,19 @@ program
   .action(async (dir: string, opts: { strict: boolean }) => {
     const result = await validate(resolve(dir), { strict: opts.strict });
     printValidateSummary(result);
+    if (result.status === "fail") process.exitCode = 1;
+  });
+
+program
+  .command("verify")
+  .description(
+    "Check ownership: fail when a human commit touched the output or purr, or a bot commit touched bacon/.",
+  )
+  .argument("[dir]", "project directory", ".")
+  .option("--base <ref>", "check commits after this ref (default: purr.last_transpiled_commit)")
+  .action(async (dir: string, opts: { base?: string }) => {
+    const result = await verify(resolve(dir), { base: opts.base });
+    printVerifySummary(result);
     if (result.status === "fail") process.exitCode = 1;
   });
 

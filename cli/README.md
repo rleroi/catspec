@@ -26,6 +26,19 @@ catspec validate .
 catspec validate path/to/project --strict
 ```
 
+### `catspec verify [dir] [--base <ref>]`
+
+Ownership check from [SPEC.md §11](../SPEC.md#11-phases-and-ownership).
+Walks the commits after `purr.last_transpiled_commit` (or `--base`) and
+fails when a human commit touched `transpiler.output` or `purr`, or a
+commit by `transpiler.bot` (default `cat-transpile-bot`) touched `bacon/` or
+`cat.config.yaml`. Prints a `cat-verify` block. Offline, git only.
+
+```bash
+catspec verify .
+catspec verify . --base origin/master   # on a PR
+```
+
 ### `catspec diff [dir]`
 
 Reads `purr`, diffs `bacon/` against `last_transpiled_commit` with git, and
@@ -44,7 +57,7 @@ Runs `catspec validate` first (skip with `--skip-validate`), then hands the
 
 ## Design
 
-- `validate` and `diff` are pure, offline and fast. Safe on every PR.
+- `validate`, `verify` and `diff` are pure, offline and fast. Safe on every PR.
 - `transpile` is the only command that calls an LLM. It always validates
   first: the CLI refuses to generate from a spec with errors.
 - Everything operates on plain files: `bacon/*.md`, `cat.config.yaml`,
