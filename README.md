@@ -9,6 +9,8 @@ transpiler writes the code.**
 - [SPEC.md](SPEC.md): the language.
 - [GLOSSARY.md](GLOSSARY.md): every term, once. `scripts/lint-docs.sh` enforces it.
 - [docs/design.md](docs/design.md): why the language looks like this.
+- [docs/workflow.md](docs/workflow.md): conversation to CI-generated code, step by step.
+- [llms.txt](llms.txt): the one-page map for agents.
 - [catspec-example](https://github.com/rleroi/catspec-example): TaskFlow, a complete spec for a small app, and the twenty-change experiment.
 - [skills/](skills/): `cat-init`, `cat-author`, `cat-transpile`.
 - [cli/](cli/): `catspec validate | verify | diff | transpile`.
@@ -93,8 +95,8 @@ changes with no hand edits to `src/`.
 - [x] Example project passes `catspec validate --strict` (moved to [catspec-example](https://github.com/rleroi/catspec-example); its spec stays here as `cli/test/fixtures/taskflow`)
 - [x] `index.html` mirrors SPEC.md 0.2
 - [x] `docs/design.md` (rationale moved out of `index.html`)
-- [ ] `docs/workflow.md`
-- [ ] `llms.txt`
+- [x] `docs/workflow.md`
+- [x] `llms.txt`
 - [x] `scripts/lint-docs.sh`: grep for banned terms from GLOSSARY.md, runs in `npm test`
 - [x] `catspec verify`: fail when a human commit touched `src/` or `purr`, or the bot touched `bacon/`
 - [x] `transpiler.agent` backend switch: `cursor`, `cursor-cli`, `claude-code`

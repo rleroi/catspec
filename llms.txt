@@ -1,0 +1,52 @@
+# CaT (Code as Text)
+
+> CaT is OpenSpec's spec format plus a system layer, for projects where the transpiler writes the code. Humans write Markdown spec files under `bacon/`; an agent running the `cat-transpile` skill regenerates `src/`. Humans never edit `src/`.
+
+A spec file is CommonMark with YAML frontmatter. Requirements use OpenSpec's `## Requirements` / `### Requirement: <name>` / `#### Scenario: <name>` grammar, with BCP 14 keywords (MUST, SHOULD, MAY, uppercase only) in EARS-shaped sentences. CaT adds `stack:`, `feature:`, `using:` and `references:` frontmatter, `## Model:`, `## Flow:` and `## View:` sections, verbatim fenced blocks, and the `purr` transpile record. A CaT spec file with the CaT-only parts removed is a valid OpenSpec spec.md.
+
+## Language
+
+- [SPEC.md](https://github.com/rleroi/catspec/blob/master/SPEC.md): the normative language specification, version 0.2. Sections: conformance, layout and ownership, frontmatter, sections, requirements, verbatim blocks, provider binding and references, resolution, configuration, validation rules, phases and ownership, purr format, quick reference.
+- [GLOSSARY.md](https://github.com/rleroi/catspec/blob/master/GLOSSARY.md): one definition per term with banned synonyms. The vocabulary authority for every other document.
+- [docs/design.md](https://github.com/rleroi/catspec/blob/master/docs/design.md): why the language is built from existing standards and where it sits among Kiro, Spec Kit, OpenSpec and Tessl.
+- [docs/workflow.md](https://github.com/rleroi/catspec/blob/master/docs/workflow.md): how a change travels from conversation to CI-generated code.
+
+## Skills (instruction files an agent loads)
+
+- [cat-init](https://github.com/rleroi/catspec/blob/master/skills/cat-init/SKILL.md): scaffold a new project: cat.config.yaml, bacon/system.md, workflow, .gitattributes, CODEOWNERS.
+- [cat-author](https://github.com/rleroi/catspec/blob/master/skills/cat-author/SKILL.md): interactive. Validate, enrich, confirm. Writes bacon/ and cat.config.yaml only.
+- [cat-transpile](https://github.com/rleroi/catspec/blob/master/skills/cat-transpile/SKILL.md): headless. Validate, generate. Writes src/ and purr only. Never asks, never edits bacon/.
+
+## CLI
+
+- [cli/README.md](https://github.com/rleroi/catspec/blob/master/cli/README.md): `catspec validate [--strict]`, `catspec verify`, `catspec diff`, `catspec transpile [--agent cursor|cursor-cli|claude-code]`.
+
+## Example
+
+- [rleroi/catspec-example](https://github.com/rleroi/catspec-example): TaskFlow, a complete spec for a small team task manager, and the twenty-change experiment.
+
+## Minimal feature file
+
+```markdown
+---
+feature: Authentication
+using: [Supabase Auth]
+---
+
+## Purpose
+Users sign up with email or Google. A Profile is created on first login.
+
+## Requirements
+
+### Requirement: Password length
+Passwords MUST be at least 10 characters.
+
+#### Scenario: Too short
+- **WHEN** a visitor submits a 9-character password
+- **THEN** sign-up is rejected
+
+## Flow: Sign Up
+1. User enters email and password
+2. System creates the auth account
+3. On first login, system creates a Profile
+```
