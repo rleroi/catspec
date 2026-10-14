@@ -29,7 +29,7 @@ catspec validate path/to/project --strict
 ### `catspec diff [dir]`
 
 Reads `purr`, diffs `bacon/` against `last_transpiled_commit` with git, and
-expands the result through the Model dependency graph recorded in `purr`
+expands the result through the dependency graph of Models recorded in `purr`
 (editing a shared `models.md` also marks every feature file that references
 it). Prints changed spec files, affected spec files, and outputs to
 regenerate.

@@ -127,7 +127,7 @@ Followed by a GFM table with columns `Field | Type | Notes`.
 | `text`, `integer`, `decimal`, `boolean`, `date`, `uuid`, `email`, `url`, `json` | primitives |
 | `timestamp` | UTC, ISO 8601 |
 | `currency` | integer minor units plus ISO 4217 code |
-| `a, b, c` | enum: comma-separated literals |
+| `a, b, c` | enum: comma-separated values |
 | `Other` | reference to the Model named `Other` |
 | `Other[]` | list of references |
 
@@ -301,7 +301,7 @@ human-owned file.
 | `doc` | Markdown, text, PDF | Context. Informative unless a requirement names it. |
 
 Reserved for a later version, not yet normative: `code` (an existing
-codebase the transpiler reads and calls but never regenerates) and `spec`
+code the transpiler reads and calls but never regenerates) and `spec`
 (another CaT or OpenSpec spec in a different repository).
 
 ---

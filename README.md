@@ -7,7 +7,8 @@ the transpiler writes the code.
 transpiler writes the code.**
 
 - [SPEC.md](SPEC.md): the language.
-- [GLOSSARY.md](GLOSSARY.md): every term, once.
+- [GLOSSARY.md](GLOSSARY.md): every term, once. `scripts/lint-docs.sh` enforces it.
+- [docs/design.md](docs/design.md): why the language looks like this.
 - [example/bacon/](example/bacon/): a complete spec for a small app.
 - [skills/](skills/): `cat-init`, `cat-author`, `cat-transpile`.
 - [cli/](cli/): `catspec validate | diff | transpile`.
@@ -90,10 +91,11 @@ changes with no hand edits to `src/`.
 - [x] `cat-author` and `cat-transpile` skills (split from the previous single skill)
 - [x] `catspec validate`, `catspec diff`, `catspec transpile` with lint-rule tests and OpenSpec conformance
 - [x] Example project passes `catspec validate --strict`
-- [ ] Rewrite `index.html` to mirror SPEC.md 0.2 (spectrum rename, OpenSpec grammar, TaskFlow example)
-- [ ] `docs/workflow.md` and `docs/design.md` (rationale moved out of `index.html`)
+- [x] `index.html` mirrors SPEC.md 0.2
+- [x] `docs/design.md` (rationale moved out of `index.html`)
+- [ ] `docs/workflow.md`
 - [ ] `llms.txt`
-- [ ] `scripts/lint-docs.sh`: grep for banned terms from GLOSSARY.md
+- [x] `scripts/lint-docs.sh`: grep for banned terms from GLOSSARY.md, runs in `npm test`
 - [ ] `catspec verify`: fail when a human commit touched `src/`
 - [ ] `transpiler.agent` backend switch (Cursor, Claude Code, Kiro CLI)
 - [ ] Publish skills: `npx skills add cat-hq/catspec`

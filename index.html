@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CaT — Code as Text</title>
-<meta name="description" content="Human-readable specs in, working code out. The spec file is the source of truth; the LLM is the compiler.">
+<meta name="description" content="Human-readable specs in, working code out. CaT is OpenSpec's spec format plus a system layer, for projects where the transpiler writes the code.">
 <style>
   :root {
     --bg: #0c0c0e;
@@ -234,7 +234,7 @@
   pre .type { color: var(--purple); }
   pre .string { color: var(--green); }
   pre .symbol { color: var(--blue); }
-  pre .pin { color: var(--red); }
+  pre .req { color: var(--red); }
   pre .flow { color: var(--pink); }
   pre .label { color: var(--text-muted); }
   pre .dim { color: var(--text-dim); }
@@ -467,7 +467,7 @@
     <div class="logo"><span>CaT</span> — Code as Text</div>
     <div class="links">
       <a href="#why">Why</a>
-      <a href="#prior-art">Prior Art</a>
+      <a href="#standards">Standards</a>
       <a href="#language">Language</a>
       <a href="#workflow">Workflow</a>
       <a href="#example">Example</a>
@@ -482,19 +482,20 @@
 <section class="hero">
   <div class="hero-grid">
     <div>
-      <div class="badge">Working Draft</div>
-      <h1>Your spec is the source.<br>The <em>LLM is the compiler</em>.</h1>
+      <div class="badge">Working Draft · 0.2</div>
+      <h1>Your spec is the source.<br>The <em>transpiler writes the code</em>.</h1>
       <p class="sub">
-        CaT is a human-readable specification format and toolchain for defining
-        full-stack applications. Specs are plain <code>.md</code> files in
-        <code>bacon/</code> &mdash; frontmatter, headings, tables, fenced code, all
-        rendered natively by GitHub and every editor. Anything binding is just a
-        sentence with <a href="https://datatracker.ietf.org/doc/html/rfc2119">RFC 2119</a>
-        MUST/SHOULD/MAY in it, wherever it's relevant.
+        CaT is <a href="https://github.com/Fission-AI/OpenSpec">OpenSpec</a>&rsquo;s spec
+        format plus a system layer, for projects where the transpiler writes the code.
+        Specs are plain <code>.md</code> files in <code>bacon/</code>: frontmatter,
+        headings, tables, fenced code. Requirements use
+        <a href="https://www.rfc-editor.org/info/bcp14">BCP 14</a> keywords in
+        <a href="https://alistairmavin.com/ears/">EARS</a>-shaped sentences, each with
+        scenarios that become tests.
       </p>
       <div class="hero-actions">
         <a href="#start" class="btn btn-primary">Get started</a>
-        <a href="#language" class="btn btn-ghost">Read the language</a>
+        <a href="SPEC.md" class="btn btn-ghost">Read the language spec</a>
       </div>
     </div>
     <div class="hero-code">
@@ -507,14 +508,17 @@
 <span class="label">using:</span> [<span class="type">Supabase Auth</span>]
 <span class="comment">---</span>
 
-Users can sign up with email or Google. Passwords <span class="pin">MUST</span>
-be at least 10 characters. Session duration <span class="pin">SHOULD</span> be 7 days.
+<span class="keyword">## Purpose</span>
+Users sign up with email or Google.
 
-<span class="keyword">## Flow:</span> Sign Up
+<span class="keyword">## Requirements</span>
 
-1. User enters email and password
-2. System creates auth account
-3. On first login, system creates Profile</code></pre>
+<span class="keyword">### Requirement:</span> Password length
+Passwords <span class="req">MUST</span> be at least 10 characters.
+
+<span class="keyword">#### Scenario:</span> Too short
+- <span class="flow">**WHEN**</span> a visitor submits a 9-character password
+- <span class="flow">**THEN**</span> sign-up is rejected</code></pre>
     </div>
   </div>
 </section>
@@ -523,252 +527,169 @@ be at least 10 characters. Session duration <span class="pin">SHOULD</span> be 7
 <section id="why">
   <h2>Why CaT exists</h2>
   <p class="lead">
-    Traditional codebases are optimized for compilers, not comprehension.
-    LLMs work best with structured natural language. CaT makes the
-    human-readable spec the single source of truth and treats generated code
-    as a derived, regenerable artifact.
+    Spec-driven tools today either throw the spec away after generation or keep it
+    next to hand-written code. CaT is the third option: the spec is the only thing
+    humans edit, and the code is regenerated from it.
   </p>
 
   <div class="card-grid">
     <div class="card">
       <h3>Spec is the source</h3>
-      <p>Humans edit <code>bacon/*.md</code>. Code in <code>src/</code> is generated, reviewed, and merged via PR.</p>
+      <p>Humans edit <code>bacon/*.md</code>. <code>src/</code> is written by the transpiler, committed, and never edited by hand. A fix is a spec change.</p>
     </div>
     <div class="card">
-      <h3>Progressive specificity</h3>
-      <p>Start vague (&ldquo;I need auth&rdquo;). Add detail only where it matters. The LLM fills the rest.</p>
+      <h3>Nothing invented where a standard existed</h3>
+      <p>Markdown, YAML frontmatter, BCP 14, EARS and the OpenSpec requirement grammar are used as they are. CaT adds only the system layer.</p>
     </div>
     <div class="card">
-      <h3>Provider binding</h3>
-      <p><code>using: Supabase Auth</code> tells the compiler which off-the-shelf tools to wire up idiomatically.</p>
+      <h3>Scenarios become tests</h3>
+      <p>Every <code>#### Scenario:</code> is one generated test. The spec is the test plan.</p>
     </div>
     <div class="card">
-      <h3>Git-native</h3>
-      <p>Push to <code>bacon/</code>, CI transpiles, opens a PR. Humans review the diff before merge.</p>
+      <h3>Git-native and agent-agnostic</h3>
+      <p>Author locally with any agent. Push <code>bacon/</code>; CI runs the headless transpile and commits <code>src/</code>. No vendor IDE.</p>
     </div>
   </div>
 
   <h3>The spectrum of control</h3>
-  <p>CaT&rsquo;s core idea: one document, five levels of authority. Higher levels override lower ones.</p>
+  <p>One document, five levels of authority. Higher levels override lower ones.</p>
 
   <div class="spectrum">
     <div class="spectrum-row">
       <div class="spectrum-level">Intent</div>
-      <div class="spectrum-you">&ldquo;I need auth&rdquo;</div>
-      <div class="spectrum-llm">Provider, flows, UI, all code</div>
+      <div class="spectrum-you">Informative prose: &ldquo;I need auth&rdquo;</div>
+      <div class="spectrum-llm">Transpiler decides everything</div>
     </div>
     <div class="spectrum-row">
-      <div class="spectrum-level">Strategy</div>
-      <div class="spectrum-you"><code>using: Supabase Auth</code></div>
-      <div class="spectrum-llm">Wiring, components, error handling</div>
+      <div class="spectrum-level">Binding</div>
+      <div class="spectrum-you"><code>stack:</code>, <code>using:</code>, <code>references:</code></div>
+      <div class="spectrum-llm">Wiring and idiom, not the provider or the reference</div>
     </div>
     <div class="spectrum-row">
-      <div class="spectrum-level">Behavior</div>
-      <div class="spectrum-you">Flows, Views, Models</div>
-      <div class="spectrum-llm">Implementation code</div>
+      <div class="spectrum-level">Structure</div>
+      <div class="spectrum-you">Model, Flow, View sections</div>
+      <div class="spectrum-llm">Implementation of the declared shape</div>
     </div>
     <div class="spectrum-row">
-      <div class="spectrum-level">Pin</div>
-      <div class="spectrum-you">A sentence with MUST/SHOULD, anywhere</div>
-      <div class="spectrum-llm">Everything else</div>
+      <div class="spectrum-level">Requirement</div>
+      <div class="spectrum-you">Named and inline requirements, scenarios</div>
+      <div class="spectrum-llm">How, never whether</div>
     </div>
     <div class="spectrum-row">
-      <div class="spectrum-level">Literal</div>
-      <div class="spectrum-you">A fenced code block, anywhere</div>
-      <div class="spectrum-llm">Nothing &mdash; hands off</div>
+      <div class="spectrum-level">Verbatim</div>
+      <div class="spectrum-you">A fenced code block outside a Model table</div>
+      <div class="spectrum-llm">Nothing. Copied unchanged</div>
     </div>
   </div>
 
   <div class="callout">
     <p>
       <strong>Specificity hierarchy:</strong>
-      Fenced code &gt; MUST/SHOULD/MAY &gt; Flow/View &gt; description text &gt; LLM discretion.
+      verbatim block &gt; requirement &gt; Flow / View / Model &gt; prose &gt; transpiler discretion.
     </p>
     <p>
-      &ldquo;Pin&rdquo; and &ldquo;Literal&rdquo; are properties of a sentence or a block,
-      not containers you put things in. Write <strong>MUST</strong>/<strong>SHOULD</strong>/<strong>MAY</strong>
-      (<a href="https://datatracker.ietf.org/doc/html/rfc2119">RFC 2119</a>) in the middle
-      of a normal paragraph and it's binding right there. Fence a code block and it's
-      verbatim right there. No dedicated section required to make either one count.
+      Every term on this page is defined once in
+      <a href="GLOSSARY.md">GLOSSARY.md</a>. The language itself is
+      <a href="SPEC.md">SPEC.md</a>. Design rationale lives in
+      <a href="docs/design.md">docs/design.md</a>.
     </p>
   </div>
 </section>
 
-<!-- PRIOR ART -->
-<section id="prior-art">
-  <h2>Built on familiar ideas</h2>
+<!-- STANDARDS -->
+<section id="standards">
+  <h2>Three tiers, nothing new where something existed</h2>
   <p class="lead">
-    CaT specs are <strong>plain <code>.md</code> files</strong> with nothing
-    bolted on except the four frontmatter fields. Every structural signal below
-    is borrowed directly from a format the model &mdash; and the human &mdash;
-    has already seen a million times.
+    A CaT feature file with the CaT-only parts removed is a valid OpenSpec
+    <code>spec.md</code>. The CLI test suite proves it against the real
+    <code>openspec validate</code>.
   </p>
 
   <table>
     <tr>
-      <th>Format</th>
-      <th>What CaT borrows</th>
-      <th>Why not the whole thing</th>
+      <th>Tier</th>
+      <th>What</th>
+      <th>From</th>
     </tr>
     <tr>
-      <td>Markdown + YAML frontmatter</td>
-      <td>Headings for structure, fenced code for verbatim content, GFM tables for model schemas, frontmatter for the four closed-vocabulary fields (<code>name</code>, <code>stack</code>, <code>feature</code>, <code>using</code>)</td>
-      <td>&mdash; adopted directly, this is the entire host format</td>
+      <td>Used unchanged</td>
+      <td>CommonMark + GFM tables, YAML frontmatter, BCP 14 (RFC 2119 + RFC 8174), OpenSpec&rsquo;s <code>## Purpose</code> / <code>## Requirements</code> / <code>### Requirement:</code> / <code>#### Scenario:</code> grammar</td>
+      <td><a href="https://spec.commonmark.org/">CommonMark</a>, <a href="https://www.rfc-editor.org/info/bcp14">BCP 14</a>, <a href="https://github.com/Fission-AI/OpenSpec">OpenSpec</a></td>
     </tr>
     <tr>
-      <td><a href="https://datatracker.ietf.org/doc/html/rfc2119">RFC 2119</a></td>
-      <td><strong>MUST</strong> / <strong>SHOULD</strong> / <strong>MAY</strong>, used inline in ordinary prose &mdash; exactly how real RFCs use them, not segregated into a special section</td>
-      <td>&mdash; adopted directly, no dedicated heading needed at all</td>
+      <td>Guidance</td>
+      <td>EARS templates for requirement bodies: WHEN, WHILE, IF&hellip;THEN, WHERE, plain. Plus the regression form <code>WHEN x, the system MUST CONTINUE TO y</code></td>
+      <td><a href="https://alistairmavin.com/ears/">EARS</a>, Kiro</td>
     </tr>
     <tr>
-      <td>TypeScript / Prisma-style types</td>
-      <td>A model reference is just the other model's name (<code>Profile</code>); a list is <code>Model[]</code> &mdash; no <code>reference to</code> / <code>list of</code> phrasing to learn</td>
-      <td>&mdash; adopted directly for the Type column in a model table</td>
+      <td>CaT&rsquo;s own</td>
+      <td><code>stack:</code>, <code>feature:</code>, <code>using:</code>, <code>references:</code> frontmatter; <code>## Model:</code>, <code>## Flow:</code>, <code>## View:</code> sections; verbatim blocks; the <code>purr</code> transpile record</td>
+      <td><a href="SPEC.md">SPEC.md</a></td>
     </tr>
     <tr>
-      <td><a href="https://cucumber.io/docs/gherkin/">Gherkin</a></td>
-      <td>Nothing structural. <code>Flow:</code> steps stay plain numbered prose</td>
-      <td>Full <code>.feature</code> files must contain only Gherkin &mdash; no models, no stack. A parallel Given/When/Then syntax alongside numbered steps would just be two ways to write the same thing</td>
-    </tr>
-    <tr>
-      <td><a href="https://datatracker.ietf.org/doc/html/rfc7322">RFC 7322</a></td>
-      <td>Nothing directly &mdash; it's a prose style guide for IETF documents, not a spec language</td>
-      <td>Relevant citation, wrong layer</td>
+      <td>References</td>
+      <td>Designs, design tokens, API descriptions and documents are pointed at, never re-described. <code>kind: design-tokens</code> is W3C DTCG, <code>kind: api</code> is OpenAPI, GraphQL or AsyncAPI, <code>kind: schema</code> is JSON Schema</td>
+      <td><a href="https://www.designtokens.org/tr/drafts/format/">DTCG</a>, <a href="https://spec.openapis.org/oas/latest.html">OpenAPI</a>, <a href="https://json-schema.org/">JSON Schema</a></td>
     </tr>
   </table>
 
-  <div class="callout">
-    <p>
-      <strong>Why not go all the way to Gherkin <code>.feature</code> files?</strong>
-      Cucumber tooling assumes a <code>.feature</code> file contains <em>only</em>
-      scenarios. CaT needs stack binding, provider binding, models, and pins living
-      next to behavior in one readable file. Split those out to stay
-      Cucumber-compatible and you've traded one custom format for three
-      interlinked ones (Gherkin + YAML models + Markdown prose) glued together
-      by a naming convention &mdash; the exact problem a unified format was
-      supposed to avoid.
-    </p>
-    <p>
-      <strong>Why plain Markdown?</strong> Markdown headings never require a
-      closed vocabulary &mdash; an LLM encountering a heading it doesn't recognize
-      just treats it as prose context, not a parse error. Fenced code blocks have
-      an unambiguous end (the closing <code>```</code>), unlike indentation-based
-      blocks. YAML frontmatter is the one place that does need a closed vocabulary,
-      and YAML already defines that cleanly.
-    </p>
-    <p>
-      <strong>Why not a <code>Pin:</code> or <code>Literal:</code> heading either?</strong>
-      Because real specs don't segregate their MUST statements into an appendix &mdash;
-      they write &ldquo;the server MUST respond within 5 seconds&rdquo; right in the
-      paragraph about server responses. And real Markdown docs don't need a special
-      heading to tell you a fenced code block is verbatim &mdash; that's what a fence
-      already means. Both of those signals already existed; wrapping them in a CaT-only
-      heading just added a second thing to learn for no parsing benefit.
-    </p>
-  </div>
-
-  <h3>Gherkin vs. CaT Flow</h3>
-  <div class="two-col">
-    <div class="panel">
-      <div class="panel-header">Gherkin &mdash; pure scenario file</div>
-<pre><code><span class="keyword">Feature:</span> Authentication
-  <span class="keyword">Scenario:</span> Sign up with email
-    <span class="flow">Given</span> the user is on the sign up page
-    <span class="flow">When</span> they enter a valid email and password
-    <span class="flow">Then</span> an auth account is created
-    <span class="flow">And</span> a verification email is sent</code></pre>
-    </div>
-    <div class="panel">
-      <div class="panel-header">CaT &mdash; one file, plain Markdown</div>
-<pre><code><span class="comment">---</span>
-<span class="label">feature:</span> <span class="type">Authentication</span>
-<span class="label">using:</span> [<span class="type">Supabase Auth</span>]
-<span class="comment">---</span>
-
-Users can sign up with email or Google. Passwords
-<span class="pin">MUST</span> be at least 10 characters.
-
-<span class="keyword">## Model:</span> Profile
-
-| Field | Type | Notes |
-|---|---|---|
-| id | uuid | primary key |
-| display_name | text | |
-
-<span class="keyword">## Flow:</span> Sign Up
-
-1. User submits a valid email and password
-2. System creates an auth account
-3. System creates a Profile on first login</code></pre>
-    </div>
-  </div>
+  <h3>Where CaT sits</h3>
+  <p>
+    Martin Fowler&rsquo;s taxonomy: <em>spec-first</em> tools generate once and
+    discard the spec (Kiro, GitHub Spec Kit); <em>spec-anchored</em> tools keep the
+    spec and update it alongside code (OpenSpec); <em>spec-as-source</em> tools
+    regenerate code from the spec (Tessl, CaT). CaT takes OpenSpec&rsquo;s grammar,
+    Tessl&rsquo;s DO NOT EDIT output marker, Kiro&rsquo;s CONTINUE TO regression form,
+    and adds the system layer: stack, providers, Models, Flows, Views, references.
+  </p>
 </section>
 
 <!-- LANGUAGE -->
 <section id="language">
-  <h2>The CaT spec language</h2>
+  <h2>The CaT language</h2>
   <p class="lead">
-    CaT specs are <strong>plain <code>.md</code> files</strong>. Frontmatter for the
-    four fields that need a closed vocabulary. Headings for the three structural
-    blocks that map to distinct generated artifacts. GFM tables for model schemas.
-    Fenced code for anything verbatim. RFC 2119 words for anything binding. That's
-    the entire language &mdash; nothing else is reserved.
+    Plain <code>.md</code> files. Frontmatter for the fields that need a closed
+    vocabulary. Headings for sections that map to generated artifacts. GFM tables
+    for Models. OpenSpec headings for requirements and scenarios. Fenced code for
+    anything verbatim. Any other heading is informative prose, never an error.
   </p>
 
-  <div class="callout">
-    <p><strong>Why this design resolves the usual parsing traps:</strong></p>
-    <p>
-      &bull; A fenced code block ends at the closing <code>```</code> &mdash;
-      no ambiguity from blank lines or re-indentation inside the verbatim code.
-      This works for <em>any</em> fenced block, not just a specially-named one.<br>
-      &bull; An unrecognized heading is never an error. Markdown never promised a
-      closed vocabulary of headings, so the transpiler simply treats anything it
-      doesn't recognize as descriptive prose.<br>
-      &bull; Frontmatter is the <em>only</em> place with a closed vocabulary
-      (<code>name</code>, <code>stack</code>, <code>feature</code>, <code>using</code>),
-      and YAML already defines exactly how that parses.<br>
-      &bull; The three structural headings (<code>Model</code>, <code>Flow</code>,
-      <code>View</code>) are matched case-insensitively &mdash; LLM-authored specs
-      drift in casing over time, so the grammar doesn't punish it.<br>
-      &bull; MUST/SHOULD/MAY carry their own meaning wherever they appear &mdash;
-      no heading has to exist for a sentence to be binding.<br>
-      &bull; The file extension is plain <code>.md</code>, not a custom one &mdash;
-      what marks a file as a spec is living in <code>bacon/</code> with
-      <code>name:</code>/<code>feature:</code> frontmatter, not its extension.
-    </p>
-  </div>
-
   <details open>
-    <summary>Project layout</summary>
+    <summary>Project layout and ownership</summary>
     <div class="details-body">
-      <p>Every CaT project has a <code>bacon/system.md</code> (required) plus feature and model files. Infrastructure config lives at the project root, outside the spec, as plain files a human can read or tune directly.</p>
-<pre><code>my-cat-project/
-├── bacon/                  <span class="comment"># source of truth, plain .md, 100% human-authored</span>
-│   ├── system.md           <span class="comment"># required</span>
-│   ├── auth.md
-│   ├── models.md           <span class="comment"># shared models</span>
-│   └── features/
-│       └── invoices.md
-├── cat.config.yaml         <span class="comment"># transpiler settings + provider profiles</span>
-├── purr                    <span class="comment"># machine state: hashes, outputs, deps, last commit</span>
-└── src/                    <span class="comment"># generated output</span></code></pre>
+<pre><code>my-project/
+├── cat.config.yaml       <span class="comment"># transpiler settings, provider profiles, references   (human-owned)</span>
+├── bacon/                <span class="comment"># the spec                                              (human-owned)</span>
+│   ├── system.md         <span class="comment"># required: name, stack, system-wide requirements</span>
+│   ├── models.md         <span class="comment"># Models shared by more than one feature</span>
+│   ├── auth.md           <span class="comment"># feature file</span>
+│   ├── features/*.md     <span class="comment"># feature files, same format</span>
+│   └── refs/             <span class="comment"># snapshots of references</span>
+├── purr                  <span class="comment"># transpile record                                  (transpiler-owned)</span>
+└── src/                  <span class="comment"># output                                            (transpiler-owned)</span></code></pre>
       <p>
-        <code>cat.config.yaml</code> holds settings a human tunes; <code>purr</code>
-        is a reviewable, diffable record of what the transpiler last did, sitting
-        right next to the config that produced it. Neither belongs inside
-        <code>bacon/</code>: that folder's diffs are supposed to mean &ldquo;a
-        human changed the spec,&rdquo; and machine-updated state would make
-        every transpile run look like a spec change too.
+        Ownership is normative. Humans, with an agent running <code>cat-author</code>,
+        change human-owned paths. Only <code>cat-transpile</code> changes
+        transpiler-owned paths, and it never modifies <code>bacon/</code>. Both are
+        committed: incremental runs need the previous output as a baseline, and the
+        <code>purr</code> diff is the review record.
       </p>
     </div>
   </details>
 
   <details>
-    <summary>Frontmatter &mdash; <code>name</code>, <code>stack</code>, <code>feature</code>, <code>using</code></summary>
+    <summary>Frontmatter</summary>
     <div class="details-body">
-      <p>Every spec file opens with a YAML frontmatter block. These four fields are the entire closed vocabulary in the language &mdash; everything else is Markdown. <code>bacon/system.md</code> is a fixed, required filename, so its own name doesn't need to appear in a field &mdash; <code>name</code> just holds the app's name.</p>
+      <table>
+        <tr><th>Field</th><th>Where</th><th>Meaning</th></tr>
+        <tr><td><code>name</code></td><td>system file</td><td>Name of the system</td></tr>
+        <tr><td><code>stack</code></td><td>system file</td><td>Map of framework, language, database, auth, styling, deploy</td></tr>
+        <tr><td><code>feature</code></td><td>feature files</td><td>Human name of the feature, unique across the project</td></tr>
+        <tr><td><code>using</code></td><td>feature files</td><td>Provider binding. The transpiler MUST use these providers and MUST NOT substitute others</td></tr>
+        <tr><td><code>references</code></td><td>any spec file</td><td>Reference binding. Names declared under <code>references:</code> in <code>cat.config.yaml</code></td></tr>
+      </table>
 <pre><code><span class="comment">---</span>
-<span class="label">name:</span> <span class="type">FreelanceOS</span>
+<span class="label">name:</span> <span class="type">TaskFlow</span>
 <span class="label">stack:</span>
   <span class="label">framework:</span>  <span class="type">Next.js</span> (App Router)
   <span class="label">language:</span>   <span class="type">TypeScript</span>
@@ -776,21 +697,50 @@ Users can sign up with email or Google. Passwords
   <span class="label">auth:</span>       <span class="type">Supabase Auth</span>
   <span class="label">styling:</span>    <span class="type">Tailwind</span> + <span class="type">shadcn/ui</span>
   <span class="label">deploy:</span>     <span class="type">Vercel</span>
-<span class="comment">---</span>
-
-A simple invoicing app for freelancers.</code></pre>
-      <p>Feature files use <code>feature</code> and <code>using</code> instead. At its simplest, a feature is frontmatter plus one sentence:</p>
-<pre><code><span class="comment">---</span>
-<span class="label">feature:</span> <span class="type">Authentication</span>
-<span class="comment">---</span>
-
-Users can sign up and log in.</code></pre>
-      <p><code>using</code> binds a feature to a provider profile under the <code>providers:</code> key in <code>cat.config.yaml</code>. It's a YAML list &mdash; one or many providers.</p>
-<pre><code><span class="comment">---</span>
-<span class="label">feature:</span> <span class="type">Invoices</span>
-<span class="label">using:</span> [<span class="type">Supabase</span>, <span class="type">Resend</span>]
 <span class="comment">---</span></code></pre>
-      <p>If <code>using</code> is omitted, the LLM chooses a provider based on <code>stack</code> and records the choice in <code>purr</code>.</p>
+      <p>Unknown fields are allowed and passed to the transpiler as hints.</p>
+    </div>
+  </details>
+
+  <details>
+    <summary><code>## Requirements</code>, <code>### Requirement:</code>, <code>#### Scenario:</code></summary>
+    <div class="details-body">
+      <p>
+        OpenSpec grammar, used unchanged. A requirement name is its identity: unique
+        within the file, case-sensitive, used in test names and <code>purr</code>.
+        The body is one to three sentences with an uppercase BCP 14 keyword, EARS-shaped.
+        Every requirement SHOULD have at least one scenario; a scenario MUST have a THEN.
+      </p>
+<pre><code><span class="keyword">## Requirements</span>
+
+<span class="keyword">### Requirement:</span> Account lockout
+IF sign-in fails three times within 10 minutes, THEN the system <span class="req">MUST</span> lock
+the account for 15 minutes.
+
+<span class="keyword">#### Scenario:</span> Third failure locks
+- <span class="flow">**GIVEN**</span> an account with 2 failed attempts in the last 10 minutes
+- <span class="flow">**WHEN**</span> a third attempt fails
+- <span class="flow">**THEN**</span> the account is locked for 15 minutes
+- <span class="flow">**AND**</span> further attempts are rejected without checking the password</code></pre>
+      <table>
+        <tr><th>Keyword</th><th>Transpiler obligation</th></tr>
+        <tr><td>MUST, MUST NOT, SHALL, REQUIRED</td><td>Implement without exception. Enforce with a test, constraint or policy. Cannot satisfy it: fail the run and name the requirement.</td></tr>
+        <tr><td>SHOULD, SHOULD NOT, RECOMMENDED</td><td>Implement by default. Deviate only for a concrete reason, recorded in <code>purr.decisions</code>.</td></tr>
+        <tr><td>MAY, OPTIONAL</td><td>Implement if cheap and consistent, otherwise skip.</td></tr>
+      </table>
+      <p>
+        <strong>EARS shapes:</strong> <code>WHEN &lt;trigger&gt;, the system MUST &hellip;</code> ·
+        <code>WHILE &lt;state&gt;, &hellip;</code> · <code>IF &lt;condition&gt;, THEN &hellip;</code> ·
+        <code>WHERE &lt;feature is present&gt;, &hellip;</code> · plain <code>&lt;subject&gt; MUST &hellip;</code> ·
+        regression <code>WHEN x, the system MUST CONTINUE TO y</code>.
+      </p>
+      <p>
+        <strong>Inline requirements:</strong> a sentence with an uppercase keyword anywhere
+        else in the file (Invariants, Flow or View prose) is still normative. It has no
+        name and no scenario, so no test. Library choices like &ldquo;drag-and-drop MUST
+        use <code>@hello-pangea/dnd</code>&rdquo; go there, not under <code>## Requirements</code>,
+        which stays behaviour-only and OpenSpec-valid.
+      </p>
     </div>
   </details>
 
@@ -798,273 +748,224 @@ Users can sign up and log in.</code></pre>
     <summary><code>## Model:</code> and <code>Invariants:</code></summary>
     <div class="details-body">
       <p>
-        A model heading is followed by a plain GFM table &mdash; the same table
-        syntax you'd use in any README. Reference fields use the other model's
-        name directly, the way TypeScript or Prisma would; append <code>[]</code>
-        for a list. Enum values are comma-separated in the Notes column, not
-        pipe-separated, since a literal <code>|</code> would collide with the
-        table's own column delimiter. Shared models referenced by multiple
-        features belong in a dedicated <code>models.md</code>, not inside any
-        one feature file.
+        A Model heading followed by a GFM table. A reference field is the other Model&rsquo;s
+        name, the way TypeScript or Prisma would write it; append <code>[]</code> for a list.
+        An enum is a comma list in the Type column. Models used by more than one feature go in
+        <code>models.md</code>.
       </p>
-<pre><code><span class="keyword">## Model:</span> Invoice
+<pre><code><span class="keyword">## Model:</span> Task
 
 | Field | Type | Notes |
 |---|---|---|
 | id | uuid | primary key |
-| owner | <span class="type">Profile</span> | |
-| status | draft, sent, paid | |
-| items | <span class="type">LineItem</span>[] | |
+| title | text | |
+| assignee | <span class="type">Profile</span> | |
+| status | todo, in_progress, done | |
+| priority | low, medium, high, urgent | default medium |
+| due_date | date | nullable |
 | created_at | timestamp | auto |
 
 Invariants:
-- The invoice <span class="pin">MUST</span> have at least one LineItem when status is <span class="string">"sent"</span>.</code></pre>
-      <p><strong>Types:</strong> <code>text</code>, <code>integer</code>, <code>decimal</code>, <code>boolean</code>, <code>date</code>,
-        <code>timestamp</code> (UTC, ISO-8601), <code>uuid</code>, <code>email</code>, <code>url</code>, <code>json</code>,
-        <code>currency</code> (integer minor units + ISO 4217 code), a comma-separated enum, or another model's name
-        (optionally with a trailing <code>[]</code>) for a reference.</p>
-      <p><strong>Notes column:</strong> free text &mdash; <code>primary key</code>, <code>nullable</code>, <code>unique</code>,
-        <code>auto</code>, <code>min N</code>, <code>max N</code>, <code>default VALUE</code>, or
-        <code>renamed from Field</code> (signals a rename so incremental transpilation writes a migration
-        instead of dropping and re-adding the column) are common, but this column isn't a closed vocabulary
-        &mdash; it's read as prose.</p>
+- The assignee <span class="req">MUST</span> belong to the same team as created_by.</code></pre>
+      <p><strong>Types:</strong> <code>text</code> <code>integer</code> <code>decimal</code> <code>boolean</code> <code>date</code>
+        <code>timestamp</code> (UTC, ISO 8601) <code>uuid</code> <code>email</code> <code>url</code> <code>json</code>
+        <code>currency</code> (minor units + ISO 4217), an enum, or a Model name.</p>
+      <p><strong>Notes vocabulary:</strong> <code>primary key</code> <code>nullable</code> <code>unique</code>
+        <code>auto</code> <code>min N</code> <code>max N</code> <code>default V</code> <code>renamed from F</code>
+        (emits a rename migration). Anything else is read as prose.</p>
     </div>
   </details>
 
   <details>
     <summary><code>## Flow:</code> and <code>## View:</code></summary>
     <div class="details-body">
-      <p>A <code>Flow</code> body is numbered steps &mdash; one way to write it, no alternative syntax to choose between. A <code>View</code> has no steps at all &mdash; it's a layout/data description. Conditions and failure handling are just more prose, phrased however reads naturally &mdash; there's no reserved marker for them, so &ldquo;if X fails, do Y&rdquo; and &ldquo;on failure, do Y&rdquo; are equally valid.</p>
-<pre><code><span class="keyword">## Flow:</span> Send Invoice
+      <p>A Flow is numbered steps: the happy path. Conditions and failure handling are prose after the list. A View is prose describing a page or component, with no sequential logic.</p>
+<pre><code><span class="keyword">## Flow:</span> Assign Task
 
-1. User clicks &ldquo;Send&rdquo; on a draft invoice with all required fields filled in
-2. System generates a PDF and emails it to client_email
-3. Invoice status changes to <span class="string">"sent"</span>
-
-If the client has a Stripe payment method on file, include a payment link.
-If sending the email fails, show &ldquo;Failed to send email&rdquo; and keep
-the status as <span class="string">"draft"</span>.
+1. User picks a team member from a dropdown
+2. System updates the assignee
+3. System notifies the new assignee
 
 <span class="keyword">## View:</span> Dashboard
 
-Show tasks grouped by status in a kanban board.
-Filter by assignee and priority.</code></pre>
-      <p>
-        Prefer describing the triggering action rather than a step number
-        ("if sending the email fails", not "if step 2 fails") &mdash; numbered-step
-        references break silently when someone inserts a step earlier in the flow.
-      </p>
+Show tasks grouped by status in a kanban board. User can filter by assignee
+and priority. Overdue tasks are highlighted with the <span class="string">`color.overdue`</span> token.
+
+The kanban board's drag-and-drop <span class="req">MUST</span> use <span class="type">@hello-pangea/dnd</span>.</code></pre>
+      <p>Say &ldquo;if sending fails&rdquo;, not &ldquo;if step 2 fails&rdquo;. Step numbers move.</p>
     </div>
   </details>
 
   <details>
-    <summary>Anything binding, anything verbatim</summary>
+    <summary>Verbatim blocks</summary>
     <div class="details-body">
-      <p>
-        Binding and verbatim are properties, not headings. Both signals already
-        exist in plain Markdown, so CaT just uses them where they occur:
-      </p>
-      <p>
-        <strong>Binding:</strong> any sentence containing <strong>MUST</strong>,
-        <strong>SHOULD</strong>, or <strong>MAY</strong> is binding at that severity,
-        wherever it appears &mdash; in a feature's description, inside a Flow step,
-        under a View, or grouped under any heading you make up (<code>## Security</code>,
-        <code>## Performance</code>, whatever reads naturally). The word is the syntax;
-        the heading, if any, is just for humans skimming.
-      </p>
-      <p>
-        <strong>Verbatim:</strong> any fenced code block outside a Model's schema
-        table is copied exactly, no modification. The language tag on the fence plus
-        the surrounding prose is enough context for where it goes &mdash; no extra
-        heading needed to say "this one's literal," a fence already means that.
-      </p>
-<pre><code>Passwords <span class="pin">MUST</span> be at least 12 characters.
-All database queries <span class="pin">MUST</span> use Row Level Security.
-The dashboard <span class="pin">SHOULD</span> load in under 1 second with up to 500 tasks.
-
-Validate the session server-side before rendering a protected page:
+      <p>Any fenced code block outside a Model table is copied into the output unchanged. The language tag and the surrounding prose say where it goes.</p>
+<pre><code>Validate the session server-side before rendering a protected page:
 
 <span class="dim">```typescript</span>
 const { data: { session } } = await supabase.auth.getSession()
 if (!session) redirect('/login')
 <span class="dim">```</span></code></pre>
+    </div>
+  </details>
+
+  <details>
+    <summary>References: designs, tokens, APIs, documents</summary>
+    <div class="details-body">
       <p>
-        Scope follows the file: a MUST/SHOULD statement in <code>system.md</code>
-        is global, the same statement in a feature file is local. If both address
-        the same subject, the feature-level statement wins.
+        A reference is declared once in <code>cat.config.yaml</code> and bound from a spec
+        file with <code>references:</code>. A Markdown link is informative; a bound reference
+        is normative, and its <code>kind</code> says what the transpiler owes it.
+      </p>
+<pre><code><span class="keyword">references:</span>
+  <span class="label">design-tokens:</span>
+    <span class="label">kind:</span> <span class="string">design-tokens</span>      <span class="comment"># W3C DTCG json; theme is generated from it</span>
+    <span class="label">uri:</span> <span class="string">bacon/refs/tokens.json</span>
+  <span class="label">dashboard-design:</span>
+    <span class="label">kind:</span> <span class="string">design</span>
+    <span class="label">uri:</span> <span class="string">https://www.figma.com/design/AbC123/TaskFlow?node-id=12-34</span>
+    <span class="label">via:</span> <span class="string">mcp:figma</span>              <span class="comment"># cat-author reads it here</span>
+    <span class="label">snapshot:</span> <span class="string">bacon/refs/dashboard/</span> <span class="comment"># cat-transpile reads only this</span></code></pre>
+      <table>
+        <tr><th>kind</th><th>Transpiler obligation</th></tr>
+        <tr><td><code>design</code></td><td>Match layout, copy and component structure in the snapshot</td></tr>
+        <tr><td><code>design-tokens</code></td><td>Generate the theme from the tokens. MUST NOT hardcode a value that exists as a token</td></tr>
+        <tr><td><code>api</code></td><td>Generate clients and types. MUST NOT invent an endpoint or field the description lacks</td></tr>
+        <tr><td><code>schema</code></td><td>Same, for JSON Schema data shapes</td></tr>
+        <tr><td><code>doc</code></td><td>Context, informative unless a requirement names it</td></tr>
+      </table>
+      <p>
+        <strong>MCP at author time, files at transpile time.</strong> The transpile run is
+        headless and offline. A remote reference MUST have a snapshot under
+        <code>bacon/refs/</code>, written by <code>cat-author</code> and committed.
       </p>
     </div>
   </details>
 
   <details>
-    <summary>References &amp; resolution</summary>
+    <summary>Config: <code>cat.config.yaml</code></summary>
     <div class="details-body">
-      <p>
-        Model names (after <code>## Model:</code>) and feature names (the <code>feature</code>
-        frontmatter value) are globally unique across <code>bacon/</code>, matched by
-        exact, case-sensitive text. Forward references are allowed &mdash; a field can
-        have type <code>Team</code> before <code>Team</code> is defined in another file,
-        since the transpiler reads every file before resolving anything.
-      </p>
-      <p>
-        If a model is referenced by two or more features, move it to <code>models.md</code>.
-        This keeps ownership unambiguous and lets incremental transpilation track the
-        dependency correctly in <code>purr</code>.
-      </p>
-      <p>
-        Unrecognized headings never participate in resolution &mdash; only frontmatter
-        fields and Type-column values that match another model's name (with or without
-        a trailing <code>[]</code>) are looked up against the closed vocabulary.
-      </p>
-    </div>
-  </details>
-
-  <details>
-    <summary>Config &mdash; <code>cat.config.yaml</code></summary>
-    <div class="details-body">
-      <p>
-        Controls how the transpiler operates and holds provider profiles. It
-        lives at the project root, as a plain file, because it's infrastructure,
-        not specification.
-      </p>
-<pre><code><span class="comment"># cat.config.yaml</span>
-<span class="keyword">version:</span> <span class="string">0.1</span>
-
+<pre><code><span class="keyword">version:</span> <span class="string">0.2</span>            <span class="comment"># CaT language version</span>
 <span class="keyword">transpiler:</span>
-  <span class="label">model:</span>     <span class="string">claude-sonnet-4</span>
-  <span class="label">strategy:</span>  <span class="string">incremental</span>    <span class="comment"># or "full"</span>
-  <span class="label">output:</span>    <span class="string">src/</span>
-  <span class="label">retries:</span>   <span class="string">2</span>              <span class="comment"># self-correction attempts on build failure</span>
-
+  <span class="label">model:</span> <span class="string">claude-sonnet-4</span> <span class="comment"># LLM id. The one place "model" means the LLM</span>
+  <span class="label">strategy:</span> <span class="string">incremental</span>  <span class="comment"># or full</span>
+  <span class="label">output:</span> <span class="string">src/</span>
+  <span class="label">retries:</span> <span class="string">2</span>             <span class="comment"># self-correction attempts on build failure</span>
 <span class="keyword">providers:</span>
   <span class="label">supabase-auth:</span>
+    <span class="label">name:</span> <span class="string">Supabase Auth</span>  <span class="comment"># matched by `using:`</span>
     <span class="label">package:</span> <span class="string">"@supabase/supabase-js"</span>
-    <span class="label">session:</span> <span class="string">cookies</span>
-  <span class="label">resend:</span>
-    <span class="label">package:</span> <span class="string">resend</span></code></pre>
-      <p>
-        The internal shape of a provider entry isn't part of the closed
-        vocabulary &mdash; it's read as context for the transpiler, the same
-        way any other prose in the spec is.
-      </p>
+    <span class="label">env:</span> [NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY]</code></pre>
+      <p>Provider profile fields other than <code>name</code> are hints, read as prose.</p>
     </div>
   </details>
 
   <details>
-    <summary>Recognized headings &amp; fields</summary>
+    <summary>Validation</summary>
     <div class="details-body">
+      <p><code>catspec validate</code> is deterministic. <code>--strict</code> turns every warning into a failure, matching OpenSpec.</p>
       <table>
-        <tr><th>Marker</th><th>Scope</th><th>Purpose</th></tr>
-        <tr><td><code>name</code></td><td>Frontmatter, system.md only</td><td>App name</td></tr>
-        <tr><td><code>stack</code></td><td>Frontmatter, system.md only</td><td>Technology choices (framework, database, etc.)</td></tr>
-        <tr><td><code>feature</code></td><td>Frontmatter, any feature file</td><td>Capability name</td></tr>
-        <tr><td><code>using</code></td><td>Frontmatter, any feature file</td><td>Provider binding</td></tr>
-        <tr><td><code>## Model:</code> + table</td><td>Any file</td><td>Data entity</td></tr>
-        <tr><td><code>Invariants:</code></td><td>Under a Model</td><td>Data-integrity rules scoped to that model</td></tr>
-        <tr><td><code>## Flow:</code></td><td>Any feature file</td><td>Behavior sequence &mdash; numbered steps</td></tr>
-        <tr><td><code>## View:</code></td><td>Any feature file</td><td>Page or UI layout description</td></tr>
-        <tr><td>MUST / SHOULD / MAY</td><td>Anywhere in the file</td><td>Binding at that severity &mdash; no heading required</td></tr>
-        <tr><td>Fenced code block</td><td>Anywhere outside a Model table</td><td>Verbatim &mdash; copy exactly, no heading required</td></tr>
+        <tr><th>Code</th><th>Condition</th></tr>
+        <tr><td><code>E_NO_SYSTEM</code>, <code>E_NO_NAME_DECL</code>, <code>E_MISSING_STACK</code>, <code>E_INVALID_CONFIG</code></td><td>Project shape</td></tr>
+        <tr><td><code>E_DUPLICATE_MODEL</code>, <code>E_DUPLICATE_FEATURE</code>, <code>E_UNRESOLVED_REF</code>, <code>E_EMPTY_FLOW</code></td><td>Names and structure</td></tr>
+        <tr><td><code>E_DUPLICATE_REQ</code>, <code>E_REQ_NO_BODY</code>, <code>E_SCENARIO_OUTSIDE_REQ</code>, <code>E_SCENARIO_NO_THEN</code></td><td>Requirement grammar</td></tr>
+        <tr><td><code>E_UNKNOWN_REFERENCE</code>, <code>E_REFERENCE_KIND</code></td><td>Reference bindings</td></tr>
+        <tr><td><code>W_NO_PURPOSE</code>, <code>W_REQ_NO_KEYWORD</code>, <code>W_REQ_NO_SCENARIO</code>, <code>W_REQ_NOT_EARS</code>, <code>W_REQ_LONG</code></td><td>Requirement quality</td></tr>
+        <tr><td><code>W_NO_FIELD_TYPE</code>, <code>W_NO_PRIMARY_KEY</code>, <code>W_SPARSE_FEATURE</code>, <code>W_NO_PROVIDER_PROFILE</code>, <code>W_CROSS_FEATURE_MODEL</code></td><td>Model and feature hygiene</td></tr>
+        <tr><td><code>W_REFERENCE_MISSING</code>, <code>W_REFERENCE_NO_SNAPSHOT</code></td><td>Reference files</td></tr>
       </table>
-      <p>That's the whole closed vocabulary: four frontmatter fields, three headings, one label, two universal signals. Any other heading is organizational prose.</p>
-    </div>
-  </details>
-
-  <details>
-    <summary>Semantics for the LLM compiler</summary>
-    <div class="details-body">
-      <p>What each construct means to the transpiler, independent of syntax:</p>
-      <table>
-        <tr><th>Construct</th><th>Meaning</th></tr>
-        <tr><td>Frontmatter fields</td><td>Structured and authoritative &mdash; parse as YAML, values are not up for interpretation</td></tr>
-        <tr><td>Prose under a heading</td><td>Guidance &mdash; follow the intent, use judgment on implementation</td></tr>
-        <tr><td><code>using</code></td><td>You MUST use these providers; load the provider profile if one exists</td></tr>
-        <tr><td>Flow steps (numbered)</td><td>Implement each step; steps describe WHAT happens, you decide HOW</td></tr>
-        <tr><td>View description</td><td>Generate UI matching the description; there is no sequential logic to implement</td></tr>
-        <tr><td>MUST / SHOULD / MAY, anywhere</td><td>RFC 2119 severity governs discretion: <strong>MUST</strong> is non-negotiable, <strong>SHOULD</strong> is a default you can override with a stated reason, <strong>MAY</strong> is optional</td></tr>
-        <tr><td>Fenced code, anywhere</td><td>Verbatim. Copy exactly, do not modify.</td></tr>
-        <tr><td><code>Invariants</code></td><td>Implement as a database constraint, validation rule, or runtime check, scoped to that one model</td></tr>
-      </table>
-      <p>Specificity hierarchy when things conflict: fenced code &gt; MUST/SHOULD/MAY &gt; Flow/View &gt; description text &gt; LLM discretion.</p>
+      <p>Full conditions in <a href="SPEC.md">SPEC.md §10</a>.</p>
     </div>
   </details>
 </section>
 
 <!-- WORKFLOW -->
 <section id="workflow">
-  <h2>How transpilation works</h2>
+  <h2>How a change flows</h2>
   <p class="lead">
-    Push changes to <code>bacon/</code>. CI reads the diff, calls the LLM transpiler,
-    and opens a PR with generated code. Humans review before merge.
+    Authoring is interactive and local. Transpiling is headless and runs in CI.
+    Two skills, one for each.
   </p>
 
   <div class="flow-diagram">
-    <span class="step">bacon/ changed</span>
+    <span class="step">human + cat-author</span>
     <span class="arrow">→</span>
-    <span class="step">git push</span>
+    <span class="step">edit bacon/</span>
     <span class="arrow">→</span>
-    <span class="step">GitHub Action</span>
+    <span class="step">catspec validate</span>
     <span class="arrow">→</span>
-    <span class="step">validate → enrich → confirm</span>
+    <span class="step">commit + push</span>
     <span class="arrow">→</span>
-    <span class="step">transpile</span>
+    <span class="step">CI: cat-transpile</span>
     <span class="arrow">→</span>
-    <span class="step">open PR</span>
-    <span class="arrow">→</span>
-    <span class="step">human review</span>
+    <span class="step">src/ + purr committed by bot</span>
   </div>
 
-  <h3>The purr file</h3>
-  <p>
-    <code>purr</code>, a plain text file at the project root, tracks operational
-    metadata: content hashes, generated output paths, cross-feature dependencies,
-    and the last transpiled commit. Incremental runs diff against it to transpile
-    only what changed. When the LLM makes an implementation choice worth pinning
-    down, it writes it back into the spec as a
-    plain MUST/SHOULD sentence.
-  </p>
-<pre><code><span class="comment"># purr</span>
-<span class="keyword">last_transpiled_commit</span>: <span class="string">a3f7c2e</span>
-
-<span class="keyword">bacon/auth.md</span>:
-  content_hash: a1b2c3d4
-  outputs:
-    - src/app/(auth)/login/page.tsx
-    - src/lib/auth.ts
-  dependencies:
-    - bacon/models.md</code></pre>
-
-  <h3>Transpiler phases</h3>
+  <h3>Phases</h3>
   <div class="card-grid">
     <div class="card">
       <h3>1. Validate</h3>
-      <p>Scan all spec files under <code>bacon/</code>. Check for duplicate models, missing references, structural errors.</p>
+      <p>Both skills, via <code>catspec validate</code>. Deterministic. Writes nothing.</p>
     </div>
     <div class="card">
       <h3>2. Enrich</h3>
-      <p>Ask clarifying questions. Propose pins for ambiguous decisions. Human approves.</p>
+      <p><code>cat-author</code>. Asks what is unclear, writes the answers into <code>bacon/</code>. The spec diff is the plan.</p>
     </div>
     <div class="card">
       <h3>3. Confirm</h3>
-      <p>Present the finalized spec diff. Wait for explicit approval before generating code.</p>
+      <p><code>cat-author</code>. The human approves the diff and commits human-owned paths.</p>
     </div>
     <div class="card">
-      <h3>4. Transpile</h3>
-      <p>Generate idiomatic code for the declared stack. Write migrations, components, routes.</p>
+      <h3>4. Generate</h3>
+      <p><code>cat-transpile</code>. Never asks, never edits <code>bacon/</code>. Writes <code>src/</code> and <code>purr</code>. Decisions and open questions go to <code>purr.decisions</code>.</p>
     </div>
   </div>
+
+  <h3>Generate rules</h3>
+  <ul>
+    <li>Existing output is context. Smallest change that satisfies the changed spec. Outputs of unchanged spec files stay byte-identical.</li>
+    <li>Every output file starts with <code>GENERATED FROM bacon/&lt;file&gt; BY CaT - DO NOT EDIT</code>.</li>
+    <li>One scenario becomes one test, named <code>&lt;feature&gt; / &lt;requirement&gt; / &lt;scenario&gt;</code>.</li>
+    <li>Build after generating. On failure, self-correct up to <code>transpiler.retries</code> times, then fail the run.</li>
+  </ul>
+
+  <h3>The purr file</h3>
+  <p>
+    The transpile record at the project root. Incremental runs diff <code>bacon/</code>
+    against <code>last_transpiled_commit</code>, expand through dependencies and
+    references, and regenerate only those outputs.
+  </p>
+<pre><code><span class="keyword">last_transpiled_commit:</span> <span class="string">a3f7c2e</span>
+<span class="keyword">last_transpiled_at:</span> <span class="string">2026-10-14T10:30:00Z</span>
+
+<span class="keyword">dependencies:</span>            <span class="comment"># Model -> spec files that reference it</span>
+  <span class="label">Team:</span> [bacon/auth.md, bacon/features/tasks.md]
+
+<span class="keyword">decisions:</span>
+  - <span class="label">spec:</span> bacon/auth.md
+    <span class="label">requirement:</span> Session length
+    <span class="label">kind:</span> should_deviation   <span class="comment"># should_deviation | may_skipped | ambiguity</span>
+    <span class="label">reason:</span> <span class="string">"Supabase default is 1h; set JWT expiry to 7d via project config"</span>
+
+<span class="keyword">bacon/auth.md:</span>
+  <span class="label">content_hash:</span> a1b2c3d4
+  <span class="label">outputs:</span>
+    - src/app/(auth)/login/page.tsx
+    - src/lib/auth.ts</code></pre>
 </section>
 
 <!-- EXAMPLE -->
 <section id="example">
-  <h2>Example: FreelanceOS</h2>
+  <h2>Example: TaskFlow</h2>
   <p class="lead">
-    Three files. Fully readable. Produces a Supabase + Next.js invoicing app.
+    Four spec files. Fourteen named requirements, every one with scenarios.
+    Validates with <code>--strict</code> and zero warnings. Full source in
+    <a href="https://github.com/cat-hq/catspec/tree/master/example/bacon">example/bacon/</a>.
   </p>
 
   <h3>bacon/system.md</h3>
 <pre><code><span class="comment">---</span>
-<span class="label">name:</span> <span class="type">FreelanceOS</span>
+<span class="label">name:</span> <span class="type">TaskFlow</span>
 <span class="label">stack:</span>
   <span class="label">framework:</span>  <span class="type">Next.js</span> (App Router)
   <span class="label">language:</span>   <span class="type">TypeScript</span>
@@ -1074,122 +975,170 @@ if (!session) redirect('/login')
   <span class="label">deploy:</span>     <span class="type">Vercel</span>
 <span class="comment">---</span>
 
-A simple invoicing app for freelancers.
-Manage clients, create invoices, track payments.
+<span class="keyword">## Purpose</span>
 
-All database access <span class="pin">MUST</span> use Row Level Security.
-Users <span class="pin">MUST</span> only access their own data.</code></pre>
+A simple task management app for small teams. Create projects, assign
+tasks, track progress.
 
-  <h3>bacon/auth.md</h3>
+<span class="keyword">## Requirements</span>
+
+<span class="keyword">### Requirement:</span> Team scoping
+WHEN a user queries any table, the system <span class="req">MUST</span> return only rows that belong
+to that user's team.
+
+<span class="keyword">#### Scenario:</span> Member of another team
+- <span class="flow">**GIVEN**</span> a user in Team A
+- <span class="flow">**WHEN**</span> they request a Task that belongs to Team B
+- <span class="flow">**THEN**</span> the response contains no Task
+- <span class="flow">**AND**</span> the status code is 404
+
+<span class="keyword">### Requirement:</span> Unauthenticated requests
+IF a request carries no valid session, THEN the system <span class="req">MUST</span> respond with
+401 and <span class="req">MUST NOT</span> reveal whether the resource exists.
+
+<span class="keyword">#### Scenario:</span> Protected route without session
+- <span class="flow">**WHEN**</span> a visitor with no session opens /dashboard
+- <span class="flow">**THEN**</span> they are redirected to /login
+- <span class="flow">**AND**</span> no data is rendered</code></pre>
+
+  <h3>bacon/auth.md (excerpt)</h3>
 <pre><code><span class="comment">---</span>
 <span class="label">feature:</span> <span class="type">Authentication</span>
 <span class="label">using:</span> [<span class="type">Supabase Auth</span>]
 <span class="comment">---</span>
 
-Users can sign up with email or Google OAuth. After first login, a Profile
-is created automatically. Passwords <span class="pin">MUST</span> be at least
-10 characters. Session duration <span class="pin">SHOULD</span> be 7 days.
+<span class="keyword">## Purpose</span>
 
-<span class="keyword">## Model:</span> Profile
+Users sign up with email or Google OAuth. A Profile is created on first
+login. Profile is shared with other features, see <span class="string">`bacon/models.md`</span>.
 
-| Field | Type | Notes |
-|---|---|---|
-| id | uuid | primary key |
-| display_name | text | |
-| avatar_url | text | nullable |
-| created_at | timestamp | auto |
+<span class="keyword">## Requirements</span>
+
+<span class="keyword">### Requirement:</span> Verification email
+WHEN a user completes email sign-up, the system <span class="req">MUST</span> send a verification
+email.
+
+<span class="keyword">#### Scenario:</span> Email sign-up
+- <span class="flow">**WHEN**</span> a visitor signs up with email and password
+- <span class="flow">**THEN**</span> a verification email is sent to that address
+- <span class="flow">**AND**</span> the account is not usable until verified
+
+<span class="keyword">#### Scenario:</span> Google sign-up
+- <span class="flow">**WHEN**</span> a visitor signs up with Google
+- <span class="flow">**THEN**</span> no verification email is sent
+
+<span class="keyword">### Requirement:</span> Session length
+Sessions <span class="req">SHOULD</span> last 7 days.
+
+<span class="keyword">#### Scenario:</span> Return within a week
+- <span class="flow">**GIVEN**</span> a user who signed in 6 days ago
+- <span class="flow">**WHEN**</span> they open the app
+- <span class="flow">**THEN**</span> they are still signed in
 
 <span class="keyword">## Flow:</span> Sign Up
 
 1. User enters email and password, or clicks "Sign in with Google"
-2. System creates auth account
-3. System sends verification email (email signup only)
-4. On first login, system creates a Profile row
+2. System creates the auth account
+3. System sends a verification email (email sign-up only)
+4. On first login, system creates a Profile row</code></pre>
 
-<span class="keyword">## Flow:</span> Sign In
-
-1. User enters credentials or uses Google
-2. System redirects to /dashboard</code></pre>
-
-  <h3>bacon/features/invoices.md</h3>
+  <h3>bacon/features/tasks.md (excerpt)</h3>
 <pre><code><span class="comment">---</span>
-<span class="label">feature:</span> <span class="type">Invoices</span>
-<span class="label">using:</span> [<span class="type">Supabase</span>, <span class="type">Resend</span>]
+<span class="label">feature:</span> <span class="type">Task Management</span>
+<span class="label">using:</span> [<span class="type">Supabase</span>]
+<span class="label">references:</span> [<span class="type">design-tokens</span>]
 <span class="comment">---</span>
 
-Users can create, edit, send, and track invoices.
-
-<span class="keyword">## Model:</span> Invoice
+<span class="keyword">## Model:</span> Notification
 
 | Field | Type | Notes |
 |---|---|---|
 | id | uuid | primary key |
-| owner | <span class="type">Profile</span> | |
-| client_name | text | |
-| client_email | email | |
-| status | draft, sent, paid, overdue | |
-| due_date | date | |
-| items | <span class="type">LineItem</span>[] | |
+| user | <span class="type">Profile</span> | recipient |
+| message | text | |
+| read | boolean | default false |
+| task | <span class="type">Task</span> | nullable |
 | created_at | timestamp | auto |
 
 Invariants:
-- The invoice <span class="pin">MUST</span> have at least one LineItem when status is <span class="string">"sent"</span>.
+- A user <span class="req">MUST</span> only read notifications where user is themselves.
 
-<span class="keyword">## Flow:</span> Send Invoice
+<span class="keyword">## Requirements</span>
 
-1. User clicks &ldquo;Send&rdquo; on a draft invoice with all required fields filled in
-2. System generates a PDF and emails it to client_email
-3. Invoice status changes to <span class="string">"sent"</span>
+<span class="keyword">### Requirement:</span> Assignment notification
+WHEN a task's assignee changes, the system <span class="req">MUST</span> create a Notification for
+the new assignee that references the task.
 
-PDF generation <span class="pin">MUST</span> use <span class="type">@react-pdf/renderer</span>.
-If sending the email fails, show &ldquo;Failed to send email. Please check the
-client's email address.&rdquo; and keep the status as <span class="string">"draft"</span>.
+<span class="keyword">#### Scenario:</span> Reassignment
+- <span class="flow">**GIVEN**</span> a task assigned to alice
+- <span class="flow">**WHEN**</span> it is reassigned to bob
+- <span class="flow">**THEN**</span> one new Notification exists for bob referencing the task
+
+<span class="keyword">#### Scenario:</span> Reassignment to the same person
+- <span class="flow">**GIVEN**</span> a task assigned to alice
+- <span class="flow">**WHEN**</span> it is reassigned to alice
+- <span class="flow">**THEN**</span> no new Notification is created
+
+<span class="keyword">### Requirement:</span> Overdue highlight
+WHILE a task's due_date is in the past and its status is not <span class="string">`done`</span>, the
+dashboard <span class="req">MUST</span> render it with a red highlight.
+
+<span class="keyword">#### Scenario:</span> Overdue but done
+- <span class="flow">**GIVEN**</span> a task due yesterday with status <span class="string">`done`</span>
+- <span class="flow">**WHEN**</span> the dashboard renders
+- <span class="flow">**THEN**</span> that task card has no overdue highlight
 
 <span class="keyword">## View:</span> Dashboard
 
-Show total outstanding, total paid this month, overdue count.
-List recent invoices with status badges. The dashboard <span class="pin">SHOULD</span>
-load in under 1 second with up to 1000 invoices.</code></pre>
+Show tasks grouped by status in a kanban board. User can filter by assignee
+and priority. Overdue tasks are highlighted with the <span class="string">`color.overdue`</span> token.
 
-  <p>See also the working example in <a href="https://github.com/cat-hq/catspec/tree/main/example">example/</a> (TaskFlow) &mdash; note it hasn't been updated to match this page yet; see the roadmap below.</p>
+The kanban board's drag-and-drop <span class="req">MUST</span> use <span class="type">@hello-pangea/dnd</span>.</code></pre>
 </section>
 
 <!-- GET STARTED -->
 <section id="start">
   <h2>Get started</h2>
   <p class="lead">
-    CaT ships as agent skills today. A CLI and GitHub Action are on the roadmap.
+    CaT ships as three agent skills and a CLI. Any agent that can load a
+    <code>SKILL.md</code> works: Cursor, Claude Code, Kiro CLI.
   </p>
 
-  <h3>Scaffold a project</h3>
-  <p>Install the <code>cat-init</code> skill and ask your agent to initialize a CaT project. It creates the folder layout, <code>system.md</code>, config, and CI workflow.</p>
-<pre><code><span class="comment"># Install skills (when published)</span>
-npx skills add cat-hq/catspec
-
-<span class="comment"># Or copy from this repo</span>
+  <h3>Scaffold, author, transpile</h3>
+<pre><code><span class="comment"># 1. Scaffold. The cat-init skill creates cat.config.yaml, bacon/system.md,</span>
+<span class="comment">#    the CI workflow, .gitattributes and CODEOWNERS.</span>
 skills/cat-init/SKILL.md
-skills/cat-transpiler/SKILL.md</code></pre>
 
-  <h3>Transpile</h3>
-  <p>Point your agent at a repo with a <code>bacon/</code> directory. The <code>cat-transpiler</code> skill runs validate → enrich → confirm → transpile.</p>
+<span class="comment"># 2. Author. Interactive. Validate, enrich, confirm, commit bacon/.</span>
+skills/cat-author/SKILL.md
+
+<span class="comment"># 3. Validate anywhere.</span>
+npx -y @catspec/cli validate . --strict
+
+<span class="comment"># 4. Transpile. Headless, in CI or locally. Writes src/ and purr only.</span>
+skills/cat-transpile/SKILL.md
+catspec transpile .</code></pre>
 
   <h3>Roadmap</h3>
   <ul class="status-list">
-    <li><span class="status-dot done"></span> <strong>cat-init skill</strong> &mdash; scaffold projects interactively</li>
-    <li><span class="status-dot done"></span> <strong>cat-transpiler skill</strong> &mdash; validate, enrich, transpile loop</li>
-    <li><span class="status-dot done"></span> <strong>End-to-end POC</strong> &mdash; validate &rarr; enrich &rarr; transpile loop run on <code>example/</code>, builds clean</li>
-    <li><span class="status-dot done"></span> <strong>CaT CLI</strong> &mdash; <code>cat validate</code>, <code>cat diff</code>, <code>cat transpile</code> (<code>cli/</code>)</li>
-    <li><span class="status-dot next"></span> <strong>Provider profiles</strong> &mdash; Supabase, Stripe, Resend, Clerk</li>
-    <li><span class="status-dot next"></span> <strong>GitHub Action</strong> &mdash; wraps <code>cat validate</code> / <code>cat diff</code> in CI</li>
-    <li><span class="status-dot later"></span> <strong>Formal parser</strong> &mdash; AST, linter, editor support (optional for v0.1)</li>
-    <li><span class="status-dot later"></span> <strong>Export adapters</strong> &mdash; <code>cat export --gherkin</code>, <code>--openapi</code></li>
+    <li><span class="status-dot done"></span> <strong>Language 0.2</strong> &mdash; OpenSpec grammar, glossary, references</li>
+    <li><span class="status-dot done"></span> <strong>Skills</strong> &mdash; <code>cat-init</code>, <code>cat-author</code>, <code>cat-transpile</code></li>
+    <li><span class="status-dot done"></span> <strong>CLI</strong> &mdash; <code>catspec validate | diff | transpile</code>, lint-rule tests, OpenSpec conformance test</li>
+    <li><span class="status-dot done"></span> <strong>Example</strong> &mdash; TaskFlow passes <code>validate --strict</code></li>
+    <li><span class="status-dot next"></span> <strong><code>catspec verify</code></strong> &mdash; fail when a human commit touched <code>src/</code></li>
+    <li><span class="status-dot next"></span> <strong>Agent backends</strong> &mdash; <code>transpiler.agent</code>: Cursor, Claude Code, Kiro CLI</li>
+    <li><span class="status-dot next"></span> <strong>The twenty-change experiment</strong> &mdash; twenty real spec changes on <code>example/</code>, no hand edits to <code>src/</code>. The kill criterion.</li>
+    <li><span class="status-dot later"></span> <strong>GitHub Action</strong> &mdash; <code>cat-hq/cat-transpile@v1</code></li>
+    <li><span class="status-dot later"></span> <strong>Published skills</strong> &mdash; <code>npx skills add cat-hq/catspec</code></li>
+    <li><span class="status-dot later"></span> <strong>References</strong> &mdash; <code>kind: code</code> for brownfield, <code>kind: spec</code> for cross-repo</li>
   </ul>
 </section>
 
 </div>
 
 <footer>
-  CaT &mdash; Code as Text &middot; Working Draft &middot; 2026
+  CaT &mdash; Code as Text &middot; Working Draft 0.2 &middot; 2026 &middot;
+  <a href="SPEC.md">SPEC.md</a> &middot; <a href="GLOSSARY.md">GLOSSARY.md</a> &middot; <a href="docs/design.md">design rationale</a>
 </footer>
 
 </body>

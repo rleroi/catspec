@@ -13,7 +13,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "dev": "tsx src/cli.ts",
-    "test": "vitest run",
+    "test": "vitest run && ../scripts/lint-docs.sh",
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
