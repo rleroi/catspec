@@ -73,6 +73,7 @@ rather than leaving placeholders.
 name: CaT
 
 on:
+  workflow_dispatch:
   push:
     paths:
       - "bacon/**"
