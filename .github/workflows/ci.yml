@@ -22,3 +22,13 @@ jobs:
       - run: npm run build
       - run: npm test
       - run: node dist/cli.js validate test/fixtures/taskflow --strict
+
+  action:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: ./
+        with:
+          dir: cli/test/fixtures/taskflow

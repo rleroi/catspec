@@ -147,7 +147,7 @@ Before finishing, confirm:
 - [ ] `.gitattributes` marks `src/**` and `purr` as generated
 - [ ] Every enabled provider has a profile whose `name` matches what you'll document for `using:`
 - [ ] `.gitignore` has the template block merged, and does **not** ignore `src/` or `purr`
-- [ ] `catspec validate .` passes (run it if the CLI is available: `npx -y @catspec/cli validate .`)
+- [ ] `catspec validate .` passes (run it if the CLI is available)
 
 ## Handoff — next steps for the user
 

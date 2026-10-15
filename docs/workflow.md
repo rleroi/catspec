@@ -57,7 +57,8 @@ spec.
 ## Every push: transpile
 
 The workflow runs on `bacon/**` and `cat.config.yaml` changes, never on a
-push by the bot itself.
+push by the bot itself. The `rleroi/catspec` action (`action.yml`) does
+steps 1 to 3; `cat-init` writes the workflow that calls it.
 
 1. `catspec validate --strict` and `catspec verify`. Either failing stops
    the run.

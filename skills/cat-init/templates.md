@@ -70,7 +70,7 @@ rather than leaving placeholders.
 ## `.github/workflows/transpile.yml`
 
 ```yaml
-name: CaT transpile
+name: CaT
 
 on:
   push:
@@ -83,44 +83,37 @@ on:
       - "cat.config.yaml"
 
 concurrency:
-  group: cat-transpile-${{ github.ref }}
+  group: cat-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: write
+
 jobs:
-  validate:
+  check:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0            # catspec diff needs history back to purr's commit
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-      - run: npx -y @catspec/cli validate . --strict
-      - run: npx -y @catspec/cli verify .     # ownership: humans never touch src/ or purr
+          fetch-depth: 0            # catspec diff and verify need history back to purr's commit
+      - uses: rleroi/catspec@master  # catspec validate --strict, catspec verify
 
-  # Enable once an agent backend and its API key are configured as repo secrets.
-  # Runs only on push (never on PR from a fork), and never when the pusher is the bot.
+  # Enable once the agent's API key is a repository secret.
+  # Runs only on push (never on a PR from a fork), never when the pusher is the bot.
   # transpile:
-  #   needs: validate
+  #   needs: check
   #   if: github.event_name == 'push' && github.actor != 'cat-transpile-bot'
   #   runs-on: ubuntu-latest
   #   steps:
   #     - uses: actions/checkout@v4
   #       with: { fetch-depth: 0 }
-  #     - uses: actions/setup-node@v4
-  #       with: { node-version: 22 }
-  #     - run: npx -y @catspec/cli transpile .   # backend from transpiler.agent
-  #       env:
-  #         CURSOR_API_KEY: ${{ secrets.CURSOR_API_KEY }}       # agent: cursor | cursor-cli
-  #         ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }} # agent: claude-code
-  #     - name: Commit transpiler-owned paths
-  #       run: |
-  #         git config user.name  "cat-transpile-bot"
-  #         git config user.email "cat-transpile-bot@users.noreply.github.com"
-  #         git add src/ purr package.json package-lock.json .env.example
-  #         git diff --cached --quiet || git commit -m "transpile: $(git rev-parse --short HEAD)"
-  #         git push
+  #     - uses: rleroi/catspec@master
+  #       with:
+  #         command: transpile
+  #         agent: claude-code                 # or cursor, cursor-cli; installs it
+  #         anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
+  #         # cursor-api-key: ${{ secrets.CURSOR_API_KEY }}
+  #         # commits src/ and purr as cat-transpile-bot and pushes
 ```
 
 ## `.gitattributes`

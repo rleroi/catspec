@@ -21,6 +21,10 @@ A spec file is CommonMark with YAML frontmatter. Requirements use OpenSpec's `##
 
 - [cli/README.md](https://github.com/rleroi/catspec/blob/master/cli/README.md): `catspec validate [--strict]`, `catspec verify`, `catspec diff`, `catspec transpile [--agent cursor|cursor-cli|claude-code]`.
 
+## GitHub Action
+
+- [action.yml](https://github.com/rleroi/catspec/blob/master/action.yml): `uses: rleroi/catspec@master`. Input `command: check` (default) runs validate --strict and verify; `command: transpile` also runs the agent and commits src/ and purr as the bot.
+
 ## Example
 
 - [rleroi/catspec-example](https://github.com/rleroi/catspec-example): TaskFlow, a complete spec for a small team task manager, and the twenty-change experiment.

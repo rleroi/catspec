@@ -1,0 +1,109 @@
+name: CaT
+description: >
+  Run the catspec CLI on a CaT project: validate and verify the spec, or
+  transpile it through an agent and commit the output as the bot.
+author: rleroi
+branding:
+  icon: file-text
+  color: orange
+
+inputs:
+  command:
+    description: >
+      "check" runs `catspec validate --strict` and `catspec verify`.
+      "transpile" runs check, then `catspec transpile`, then commits src/ and
+      purr as the bot when `commit` is true.
+    default: check
+  dir:
+    description: Project directory containing bacon/ and cat.config.yaml.
+    default: .
+  agent:
+    description: >
+      Backend for transpile: cursor, cursor-cli or claude-code. Empty uses
+      transpiler.agent from cat.config.yaml. cursor-cli and claude-code are
+      installed by the action when named here.
+    default: ""
+  model:
+    description: LLM id for transpile. Empty uses transpiler.model from cat.config.yaml.
+    default: ""
+  commit:
+    description: After transpile, commit transpiler-owned paths as the bot and push.
+    default: "true"
+  bot:
+    description: Git author for the transpile commit. Must match transpiler.bot in cat.config.yaml.
+    default: cat-transpile-bot
+  cursor-api-key:
+    description: CURSOR_API_KEY for agent cursor or cursor-cli.
+    default: ""
+  anthropic-api-key:
+    description: ANTHROPIC_API_KEY for agent claude-code.
+    default: ""
+
+outputs:
+  changed:
+    description: "true" when transpile produced a commit.
+    value: ${{ steps.commit.outputs.changed }}
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 22
+
+    - name: Build catspec
+      shell: bash
+      run: |
+        cd "$GITHUB_ACTION_PATH/cli"
+        npm ci --no-audit --no-fund --silent
+        npm run build --silent
+        echo "CATSPEC=node $GITHUB_ACTION_PATH/cli/dist/cli.js" >> "$GITHUB_ENV"
+
+    - name: catspec validate --strict
+      shell: bash
+      run: $CATSPEC validate "${{ inputs.dir }}" --strict
+
+    - name: catspec verify
+      shell: bash
+      run: $CATSPEC verify "${{ inputs.dir }}"
+
+    - name: Install agent
+      if: inputs.command == 'transpile' && inputs.agent != ''
+      shell: bash
+      run: |
+        case "${{ inputs.agent }}" in
+          claude-code) npm i -g --silent @anthropic-ai/claude-code ;;
+          cursor-cli)  curl -fsS https://cursor.com/install | bash; echo "$HOME/.local/bin" >> "$GITHUB_PATH" ;;
+          cursor)      ;;
+          *) echo "unknown agent: ${{ inputs.agent }}"; exit 1 ;;
+        esac
+
+    - name: catspec transpile
+      if: inputs.command == 'transpile'
+      shell: bash
+      env:
+        CURSOR_API_KEY: ${{ inputs.cursor-api-key }}
+        ANTHROPIC_API_KEY: ${{ inputs.anthropic-api-key }}
+      run: |
+        args=("${{ inputs.dir }}")
+        [ -n "${{ inputs.agent }}" ] && args+=(--agent "${{ inputs.agent }}")
+        [ -n "${{ inputs.model }}" ] && args+=(--model "${{ inputs.model }}")
+        $CATSPEC transpile "${args[@]}"
+
+    - name: Commit transpiler-owned paths
+      id: commit
+      if: inputs.command == 'transpile' && inputs.commit == 'true'
+      shell: bash
+      run: |
+        cd "${{ inputs.dir }}"
+        git config user.name  "${{ inputs.bot }}"
+        git config user.email "${{ inputs.bot }}@users.noreply.github.com"
+        git add -A -- . ':!bacon' ':!cat.config.yaml'
+        if git diff --cached --quiet; then
+          echo "changed=false" >> "$GITHUB_OUTPUT"
+          exit 0
+        fi
+        git commit -q -m "transpile: $(git rev-parse --short HEAD)"
+        $CATSPEC verify .
+        git push
+        echo "changed=true" >> "$GITHUB_OUTPUT"
