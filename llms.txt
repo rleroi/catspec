@@ -13,6 +13,8 @@ A spec file is CommonMark with YAML frontmatter. Requirements use OpenSpec's `##
 
 ## Skills (instruction files an agent loads)
 
+Install into any agent with `npx skills add rleroi/catspec`.
+
 - [cat-init](https://github.com/rleroi/catspec/blob/master/skills/cat-init/SKILL.md): scaffold a new project: cat.config.yaml, bacon/system.md, workflow, .gitattributes, CODEOWNERS.
 - [cat-author](https://github.com/rleroi/catspec/blob/master/skills/cat-author/SKILL.md): interactive. Validate, enrich, confirm. Writes bacon/ and cat.config.yaml only.
 - [cat-transpile](https://github.com/rleroi/catspec/blob/master/skills/cat-transpile/SKILL.md): headless. Validate, generate. Writes src/ and purr only. Never asks, never edits bacon/.

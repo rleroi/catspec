@@ -12,7 +12,7 @@ transpiler writes the code.**
 - [docs/workflow.md](docs/workflow.md): conversation to CI-generated code, step by step.
 - [llms.txt](llms.txt): the one-page map for agents.
 - [catspec-example](https://github.com/rleroi/catspec-example): TaskFlow, a complete spec for a small app, and the twenty-change experiment.
-- [skills/](skills/): `cat-init`, `cat-author`, `cat-transpile`.
+- [skills/](skills/): `cat-init`, `cat-author`, `cat-transpile`. Install with `npx skills add rleroi/catspec`.
 - [cli/](cli/): `catspec validate | verify | diff | transpile`.
 - [action.yml](action.yml): `uses: rleroi/catspec@master` runs the CLI in GitHub Actions.
 
@@ -114,7 +114,7 @@ changes with no hand edits to `src/`.
 - [x] `scripts/lint-docs.sh`: grep for banned terms from GLOSSARY.md, runs in `npm test`
 - [x] `catspec verify`: fail when a human commit touched `src/` or `purr`, or the bot touched `bacon/`
 - [x] `transpiler.agent` backend switch: `cursor`, `cursor-cli`, `claude-code`
-- [ ] Publish skills: `npx skills add cat-hq/catspec`
+- [x] Skills installable: `npx skills add rleroi/catspec` (optionally `--skill cat-author`)
 - [x] GitHub Action: `uses: rleroi/catspec@master` (`action.yml`), command `check` or `transpile`
 - [ ] The twenty-change experiment on catspec-example
 - [ ] References: `kind: code` (brownfield, read-only) and `kind: spec` (cross-repo), reserved in SPEC.md §7.1
