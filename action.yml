@@ -41,7 +41,7 @@ inputs:
 
 outputs:
   changed:
-    description: "true" when transpile produced a commit.
+    description: true when transpile produced a commit, else false.
     value: ${{ steps.commit.outputs.changed }}
 
 runs:
