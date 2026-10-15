@@ -100,7 +100,6 @@ changes with no hand edits to `src/`.
 - [x] `scripts/lint-docs.sh`: grep for banned terms from GLOSSARY.md, runs in `npm test`
 - [x] `catspec verify`: fail when a human commit touched `src/` or `purr`, or the bot touched `bacon/`
 - [x] `transpiler.agent` backend switch: `cursor`, `cursor-cli`, `claude-code`
-- [ ] Kiro CLI backend
 - [ ] Publish skills: `npx skills add cat-hq/catspec`
 - [ ] GitHub Action `cat-hq/cat-transpile@v1`
 - [ ] The twenty-change experiment on catspec-example

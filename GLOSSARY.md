@@ -45,7 +45,7 @@ When a term in the table has a banned synonym, use only the canonical form.
 | **output** | The generated files. Location is `transpiler.output` in `cat.config.yaml`, default `src/`. | codebase, generated artifact, derived artifact |
 | **purr** | The transpile record at the project root: last transpiled commit, content hashes, outputs, dependencies, decisions. | lock file, lockfile, machine state |
 | **decision** | A recorded choice the transpiler made where the spec left room: a SHOULD it deviated from, a MAY it skipped, an ambiguity it resolved. Lives in `purr.decisions` until `cat-author` writes the answer into the spec, then it disappears. Current state, not a log. | decision log, ADR |
-| **agent** | The LLM runtime executing a skill: Cursor, Claude Code, Kiro CLI, and so on. | — |
+| **agent** | The LLM runtime executing a skill: Cursor, Claude Code, and so on. | — |
 | **LLM** | The underlying language model. Use only when the distinction from *agent* or *transpiler* matters. | "the model" |
 | **skill** | An instruction file an agent loads: `cat-init`, `cat-author`, `cat-transpile`. | — |
 | **author** (verb) | A human, with an agent running `cat-author`, writing or changing the spec. | — |
